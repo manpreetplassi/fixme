@@ -1,5 +1,5 @@
-import { ExpressAdapter } from '@nestjs/platform-express';
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module';
 import { configureApp, seedDemoDataIfEnabled } from '../src/configure-app';
 
@@ -22,6 +22,22 @@ async function bootstrapServer() {
 }
 
 export default async function handler(req: any, res: any) {
-  const server = await bootstrapServer();
-  return server(req, res);
+  try {
+    const server = await bootstrapServer();
+    return server(req, res);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown bootstrap error';
+    const stack = error instanceof Error ? error.stack : undefined;
+
+    console.error('Vercel bootstrap failed:', stack ?? message);
+
+    return res.status(500).json({
+      error: {
+        message: 'Backend bootstrap failed',
+        detail: message,
+        path: req.url,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  }
 }
