@@ -12,12 +12,13 @@ import { Reel } from '../reels-vault/entities/reel.entity';
 import { Solution } from '../solutions-bank/entities/solution.entity';
 import { Streak } from '../streaks/entities/streak.entity';
 import { User } from '../users/entities/user.entity';
+import { getDatabaseUrlFromEnv } from './database-url';
 
 loadEnv();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  url: process.env.DATABASE_URL,
+  url: getDatabaseUrlFromEnv(),
   entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak],
   migrations: ['src/database/migrations/*{.ts,.js}'],
   synchronize: process.env.DB_SYNCHRONIZE === 'true',

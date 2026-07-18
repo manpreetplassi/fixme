@@ -95,6 +95,8 @@ Configure these in the backend Vercel project:
 | Name | Example Value | Required | Notes |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | `postgresql://USER:PASSWORD@HOST:5432/DB_NAME` | Yes | Public or private DB URL available to backend host. |
+| `DATABASE_URL_UNPOOLED` | `postgresql://USER:PASSWORD@HOST:5432/DB_NAME` | Recommended for Neon/Vercel Postgres | TypeORM will prefer this for migrations/startup when it exists. |
+| `POSTGRES_URL_NON_POOLING` | `postgresql://USER:PASSWORD@HOST:5432/DB_NAME` | Optional | Also supported as an unpooled fallback from Vercel Postgres. |
 | `DB_SYNCHRONIZE` | `false` | Yes | Keep false in deployed environments. |
 | `DB_MIGRATIONS_RUN` | `true` | Recommended | Runs pending migrations on backend startup. |
 | `DB_SEED_DEMO` | `true` | Recommended for demo login | Creates the demo user and starter data if missing. Keep `false` when you do not want demo data. |

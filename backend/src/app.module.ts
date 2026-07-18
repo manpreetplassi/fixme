@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
+import { getDatabaseUrl } from './database/database-url';
 import { DailyLogsModule } from './daily-logs/daily-logs.module';
 import { DailyTasksModule } from './daily-tasks/daily-tasks.module';
 import { GeminiModule } from './gemini/gemini.module';
@@ -23,7 +24,7 @@ import { UsersModule } from './users/users.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        url: config.get<string>('DATABASE_URL'),
+        url: getDatabaseUrl(config),
         autoLoadEntities: true,
         synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
         migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
