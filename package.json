@@ -1,0 +1,19 @@
+{
+  "name": "fixme",
+  "version": "1.0.0",
+  "description": "FixMe local development workspace",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}

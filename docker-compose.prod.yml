@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: fixme_db
+      POSTGRES_USER: fixme_user
+      POSTGRES_PASSWORD: fixme_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://fixme_user:fixme_pass@db:5432/fixme_db
+      JWT_SECRET: change_this_to_a_long_random_string
+      JWT_EXPIRES_IN: 7d
+      DB_SYNCHRONIZE: false
+      DB_MIGRATIONS_RUN: true
+      GEMINI_API_KEY: your_google_gemini_api_key_here
+      NODE_ENV: production
+      PORT: 3001
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
