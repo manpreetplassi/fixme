@@ -2,8 +2,14 @@
 
 import axios from 'axios';
 
+function getApiBaseUrl() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+  const normalized = baseUrl.replace(/\/+$/, '');
+  return normalized.endsWith('/api') ? normalized : `${normalized}/api`;
+}
+
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api',
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
 });
 
