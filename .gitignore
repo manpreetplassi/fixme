@@ -38,6 +38,8 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+.git.backup/
+*/.git.backup/
 
 # Local database and Docker artifacts
 *.sqlite
