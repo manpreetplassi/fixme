@@ -3,9 +3,9 @@
 This project is a monorepo with two deployable parts:
 
 - `frontend`: Next.js app. Deploy this to Vercel now.
-- `backend`: NestJS API plus PostgreSQL. It must be reachable from the Vercel site through a public HTTPS API URL.
+- `backend`: NestJS API plus PostgreSQL. You can deploy it as a separate Vercel project now, then move it to AWS later without changing the app contract.
 
-Vercel should only deploy the frontend for now. Keep the backend on a public API host such as AWS, Render, Railway, Fly.io, a VPS, or any service that can run the NestJS app and connect to PostgreSQL.
+Deploy the frontend and backend as separate Vercel projects. The frontend calls the backend through `NEXT_PUBLIC_API_URL`.
 
 ## Vercel Frontend Deployment
 
@@ -40,7 +40,7 @@ Add these in Vercel Project Settings -> Environment Variables.
 
 | Name | Example Value | Required | Notes |
 | --- | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://api.your-domain.com/api` | Yes | Public backend API URL. Must include `/api`. |
+| `NEXT_PUBLIC_API_URL` | `https://fixme-backend.vercel.app/api` | Yes | Public backend API URL. `/api` is preferred, and the app also normalizes a URL without it. |
 
 Use the same value for Production, Preview, and Development unless you have separate backend environments.
 
@@ -60,15 +60,44 @@ Vercel will build the frontend and publish a URL like:
 https://your-project.vercel.app
 ```
 
-## Backend Variables Required For Vercel Frontend
+## Vercel Backend Deployment
 
-Wherever the backend is deployed, configure these environment variables:
+### 1. Import Backend Project
+
+Create a second Vercel project for the API and use these settings:
+
+| Setting | Value |
+| --- | --- |
+| Framework Preset | Other |
+| Root Directory | `backend` |
+| Install Command | `npm install` |
+| Build Command | `npm run build` |
+| Output Directory | leave empty |
+
+If your Git repository root contains the outer `fixme` folder, set Root Directory to:
+
+```text
+fixme/backend
+```
+
+If your Git repository root is already the `fixme` folder, set Root Directory to:
+
+```text
+backend
+```
+
+The backend includes `backend/vercel.json`, which routes all requests through the NestJS serverless handler at `backend/api/index.ts`.
+
+### 2. Add Backend Environment Variables
+
+Configure these in the backend Vercel project:
 
 | Name | Example Value | Required | Notes |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | `postgresql://USER:PASSWORD@HOST:5432/DB_NAME` | Yes | Public or private DB URL available to backend host. |
 | `DB_SYNCHRONIZE` | `false` | Yes | Keep false in deployed environments. |
 | `DB_MIGRATIONS_RUN` | `true` | Recommended | Runs pending migrations on backend startup. |
+| `DB_SEED_DEMO` | `true` | Recommended for demo login | Creates the demo user and starter data if missing. Keep `false` when you do not want demo data. |
 | `JWT_SECRET` | `replace_with_long_random_secret` | Yes | Use a strong random value. Never commit it. |
 | `JWT_EXPIRES_IN` | `7d` | Yes | Token expiry. |
 | `GEMINI_API_KEY` | empty or real key | No | Leave empty to use fallback behavior. |
@@ -78,14 +107,41 @@ Wherever the backend is deployed, configure these environment variables:
 
 After adding a custom Vercel domain, also add it to backend `FRONTEND_URLS`.
 
+### 3. Check Backend Health
+
+After deploy, open:
+
+```text
+https://your-backend.vercel.app/api/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "database": "ok",
+  "hasDatabaseUrl": true
+}
+```
+
+If `/api/auth/login` returns `500`, check `/api/health` first. A degraded database status normally means `DATABASE_URL` is wrong, the database is not reachable from Vercel, or migrations were not run.
+
 ## Production Checklist
 
 - Vercel frontend has `NEXT_PUBLIC_API_URL` set to the public backend URL with `/api`.
 - Backend CORS allows the Vercel URL through `FRONTEND_URLS`.
 - Backend has `DB_SYNCHRONIZE=false`.
 - Backend has migrations available and `DB_MIGRATIONS_RUN=true` or migrations are run manually before release.
+- Backend has `DB_SEED_DEMO=true` if you want `demo@fixme.app` / `Demo@123` to work after deployment.
 - PostgreSQL is reachable from the backend host.
 - `JWT_SECRET` is strong and not shared with local/dev values.
+- Backend health is reachable at:
+
+```text
+https://api.your-domain.com/api/health
+```
+
 - Swagger is reachable at:
 
 ```text

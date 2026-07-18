@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { DailyLogsModule } from './daily-logs/daily-logs.module';
 import { DailyTasksModule } from './daily-tasks/daily-tasks.module';
 import { GeminiModule } from './gemini/gemini.module';
+import { HealthModule } from './health/health.module';
 import { HobbiesModule } from './hobbies/hobbies.module';
 import { LearningLogsModule } from './learning-logs/learning-logs.module';
 import { MoneyTrackerModule } from './money-tracker/money-tracker.module';
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     DailyTasksModule,
     DailyLogsModule,
     StreaksModule,
+    HealthModule,
     HobbiesModule,
     LearningLogsModule,
     ReflectionsModule,
