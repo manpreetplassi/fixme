@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { getDatabaseUrl } from './database/database-url';
+import { migrations } from './database/migrations';
 import { DailyLogsModule } from './daily-logs/daily-logs.module';
 import { DailyTasksModule } from './daily-tasks/daily-tasks.module';
 import { GeminiModule } from './gemini/gemini.module';
@@ -27,7 +28,7 @@ import { UsersModule } from './users/users.module';
         url: getDatabaseUrl(config),
         autoLoadEntities: true,
         synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
-        migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+        migrations,
         migrationsRun: config.get<string>('DB_MIGRATIONS_RUN', 'false') === 'true',
       }),
     }),

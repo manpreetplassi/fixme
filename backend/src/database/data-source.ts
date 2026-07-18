@@ -13,6 +13,7 @@ import { Solution } from '../solutions-bank/entities/solution.entity';
 import { Streak } from '../streaks/entities/streak.entity';
 import { User } from '../users/entities/user.entity';
 import { getDatabaseUrlFromEnv } from './database-url';
+import { migrations } from './migrations';
 
 loadEnv();
 
@@ -20,6 +21,6 @@ export const AppDataSource = new DataSource({
   type: 'postgres',
   url: getDatabaseUrlFromEnv(),
   entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak],
-  migrations: ['src/database/migrations/*{.ts,.js}'],
+  migrations,
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });
