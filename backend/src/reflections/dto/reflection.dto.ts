@@ -12,3 +12,5 @@ export class CreateReflectionDto {
   @ApiPropertyOptional() @IsOptional() @IsBoolean() masturbation_happened?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() masturbation_trigger_log?: string;
 }
+
+export class UpdateReflectionDto extends CreateReflectionDto {}

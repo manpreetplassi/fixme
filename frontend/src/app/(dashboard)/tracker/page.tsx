@@ -118,10 +118,17 @@ export default function TrackerPage() {
   };
 
   const isSaving = createLog.isPending || updateLog.isPending || deleteLog.isPending;
+  const isLoading = tasks.isLoading || logs.isLoading;
+  const isError = tasks.isError || logs.isError;
 
   return (
     <div>
       <PageHeader title="Daily Tracker" subtitle="Create, edit, review, and clean up today's task logs." />
+      {isLoading ? <p className="mb-4 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">Loading tracker tasks...</p> : null}
+      {isError ? <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">Could not load tracker data.</p> : null}
+      {!isLoading && !isError && (tasks.data ?? []).length === 0 ? (
+        <p className="mb-4 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">No tasks are enabled for this day type.</p>
+      ) : null}
 
       <div className="grid gap-4">
         {(tasks.data ?? []).map((task: DailyTask) => {

@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { BarChart3, BookOpen, Film, House, LogOut, Settings, SquareCheckBig } from 'lucide-react';
+import { BarChart3, Bike, BookOpen, BookHeart, Film, House, IndianRupee, LogOut, Settings, SquareCheckBig } from 'lucide-react';
 import { useAuth, useLogout } from '@/hooks/use-auth';
 
 const navItems = [
@@ -13,6 +13,9 @@ const navItems = [
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/reels', label: 'Reels Vault', icon: Film },
   { href: '/learning', label: 'Learning', icon: BookOpen },
+  { href: '/reflections', label: 'Reflections', icon: BookHeart },
+  { href: '/money', label: 'Money', icon: IndianRupee },
+  { href: '/hobbies', label: 'Hobbies', icon: Bike },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

@@ -60,10 +60,12 @@ async function testBlockerCounts(): Promise<void> {
   ]);
 }
 
-async function run(): Promise<void> {
+export async function runAnalyticsServiceTests(): Promise<void> {
   await testWeeklyAnalytics();
   await testBlockerCounts();
   console.log('analytics.service tests passed');
 }
 
-void run();
+if (require.main === module) {
+  void runAnalyticsServiceTests();
+}

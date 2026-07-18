@@ -26,6 +26,14 @@ npm run dev
 - Gemini integration is optional; leave `GEMINI_API_KEY` empty to use the fallback analysis path.
 - The frontend expects the API base URL to include `/api`.
 
+## Local Troubleshooting
+
+- If `npm run dev` cannot connect to the database, run `docker ps` and confirm `fixme-db` is healthy.
+- If ports are busy, stop the previous dev server with `Ctrl+C`, then rerun `npm run dev`.
+- If a production build fails on `frontend/.next/trace`, stop the running Next dev server before building.
+- If migrations fail after schema changes, run `npm --prefix backend run migration:run` to see the exact database error.
+- If Windows reports a spawn error, make sure you are running commands from `fixme` and using Node.js 18+.
+
 ## Deployment
 
 - Vercel frontend guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)

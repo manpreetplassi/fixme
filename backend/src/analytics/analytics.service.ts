@@ -41,6 +41,7 @@ export class AnalyticsService {
     return {
       weekStart: dailyScores[dailyScores.length - 1]?.date ?? null,
       weekEnd: dailyScores[0]?.date ?? null,
+      dailyScores,
       totalScore,
       avgScore: dailyScores.length ? totalScore / dailyScores.length : 0,
       completedTasks,

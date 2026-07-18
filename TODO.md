@@ -1,55 +1,88 @@
-# FixMe Implementation TODO
+# FixMe TODO
 
-## Current Status
+Use this file as the task runner.
 
-- [x] Monorepo structure and Docker Compose scaffold
-- [x] Backend bootstrap with NestJS, Swagger, config, and PostgreSQL wiring
-- [x] Core backend modules: auth, users, daily tasks, daily logs, streaks
-- [x] Secondary backend modules: hobbies, learning logs, reflections, reels vault, money tracker, analytics, solutions bank, Gemini wrapper
-- [x] Seed script and local environment examples
-- [x] Frontend auth screens and protected dashboard shell
-- [x] Frontend pages for dashboard, tracker, analytics, reels, learning, and settings
-- [x] Database migrations
-- [ ] Full CRUD polish and deeper frontend interactions for every module
-- [ ] Automated tests
-- [ ] End-to-end Docker verification
-- [ ] AWS deployment / CI pipeline
+- Work from top to bottom.
+- Keep every item in `- [ ]` or `- [x]` format.
+- Mark a task as `- [x]` only after it is actually complete.
+- After completing one task, move to the next unchecked task.
 
-## Next High-Value Work
+## Phase 1 - TODO Cleanup
 
-1. Deepen the frontend pages with edit/delete flows, better empty/loading states, and charts.
-2. Expand automated tests beyond the initial analytics service coverage.
-3. Run the full stack through Docker and fix any runtime integration gaps.
-4. Add AWS deployment and CI pipeline automation.
+- [x] Read the existing TODO file.
+- [x] Convert TODO into a clean checklist format.
+- [x] Audit whether the referenced `/outputs/` prompt/spec files exist in this repo.
+- [x] Add the actual new feature requirements to this TODO file.
 
-## Phase Plan
+## Phase 2 - Feature Implementation Queue
 
-### Phase 1 - Backend schema foundation
+- [x] Break each new feature into backend, frontend, data, and verification chunks.
 
-- [x] Add TypeORM migration scripts.
-- [x] Add initial schema migration for the currently wired backend entities.
-- [x] Default local schema sync to off in the app and env example.
+### Feature 1 - Reels Vault CRUD Polish
 
-### Phase 2 - Automated safety net
+- [x] Verify backend Reels Vault create/read/update/delete endpoints.
+- [x] Add missing backend Reels Vault CRUD support if needed.
+- [x] Skip Reels Vault frontend work for now per user instruction.
 
-- [x] Add lightweight backend test command.
-- [x] Cover weekly analytics and blocker aggregation.
-- [ ] Add service/controller tests for auth, daily logs, streaks, and CRUD modules.
+### Feature 2 - Learning Logs CRUD Polish
 
-### Phase 3 - Runtime verification
+- [x] Verify backend Learning Logs create/read/update/delete endpoints.
+- [x] Add missing backend Learning Logs CRUD support if needed.
+- [x] Add frontend Learning Logs create/edit/delete flows.
+- [x] Add Learning Logs loading, empty, and error states.
+- [x] Run backend and frontend verification for Learning Logs.
 
-- [x] Verify backend production build.
-- [x] Verify frontend production build.
-- [x] Verify Docker Compose config renders with migration env vars.
-- [ ] Run full Docker Compose stack end to end.
+### Feature 3 - Remaining Module CRUD Polish
 
-### Phase 4 - Product polish
+- [x] Add full CRUD polish to reflections.
+- [x] Add full CRUD polish to money tracker.
+- [x] Add full CRUD polish to hobbies.
+- [x] Add full CRUD polish to settings/profile.
 
-- [ ] Add edit/delete flows across frontend modules.
-- [ ] Improve empty and loading states.
-- [ ] Add richer analytics charts and frontend interactions.
+### Feature 4 - Analytics and Quality
 
-### Phase 5 - Delivery
+- [x] Improve empty, loading, and error states across dashboard pages.
+- [x] Add richer analytics charts and interactions.
+- [x] Add service/controller tests for auth, daily logs, streaks, and CRUD modules.
 
-- [ ] Add CI pipeline.
-- [ ] Add AWS deployment path and environment documentation.
+- [x] Implement the first feature backend changes.
+- [x] Mark the first feature backend task complete.
+- [x] Implement the first feature frontend changes.
+- [x] Mark the first feature frontend task complete.
+- [x] Run backend verification for the first feature.
+- [x] Run frontend verification for the first feature.
+- [x] Mark the first feature complete.
+- [x] Move to the next feature and repeat the same checklist flow.
+
+## Phase 3 - Current Known Project Backlog
+
+- [x] Add project `.gitignore`.
+- [x] Simplify local startup to `docker compose up -d` then `npm run dev`.
+- [x] Replace schema sync workflow with TypeORM migrations.
+- [x] Add initial database migration.
+- [x] Add tracker create/read/update/delete UI for daily logs.
+- [x] Add Vercel frontend deployment guide.
+- [x] Keep future AWS deployment path documented.
+- [x] Add full CRUD polish to learning logs, reflections, money tracker, hobbies, and settings.
+- [x] Keep Reels Vault frontend work deferred per user instruction.
+- [x] Improve empty, loading, and error states across dashboard pages.
+- [x] Add richer analytics charts and interactions.
+- [x] Add service/controller tests for auth, daily logs, streaks, and CRUD modules.
+- [x] Verify frontend production build after stopping any running local Next dev server.
+- [x] Verify backend production build before deployment.
+- [x] Add CI pipeline.
+
+## Phase 4 - Release Checklist
+
+- [ ] Confirm Vercel project root is `frontend`.
+- [ ] Confirm Vercel env var `NEXT_PUBLIC_API_URL` points to a public backend URL ending in `/api`.
+- [ ] Confirm backend env vars are set on the backend host.
+- [ ] Confirm backend `FRONTEND_URLS` includes the Vercel domain.
+- [ ] Confirm login works on deployed frontend.
+- [ ] Confirm tracker CRUD works on deployed frontend.
+
+## Notes
+
+- The previous TODO content referenced `/outputs/` files such as `QUICK_START_GUIDE.md`, `FIXME_COMPLETE_PROJECT_SPECIFICATION.md`, and phase prompt files.
+- Those referenced files are not present in this repository right now.
+- Paste the actual new feature requirements under Phase 2 before implementation starts.

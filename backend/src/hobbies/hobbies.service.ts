@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { CreateHobbyDto, CreateHobbyLogDto } from './dto/hobby.dto';
+import { CreateHobbyDto, CreateHobbyLogDto, UpdateHobbyDto, UpdateHobbyLogDto } from './dto/hobby.dto';
 import { HobbyLog } from './entities/hobby-log.entity';
 import { Hobby } from './entities/hobby.entity';
 
@@ -19,6 +19,25 @@ export class HobbiesService {
 
   create(dto: CreateHobbyDto): Promise<Hobby> {
     return this.hobbyRepo.save(this.hobbyRepo.create(dto));
+  }
+
+  async findOne(id: string): Promise<Hobby> {
+    const hobby = await this.hobbyRepo.findOne({ where: { id } });
+    if (!hobby) throw new NotFoundException('Hobby not found');
+    return hobby;
+  }
+
+  async update(id: string, dto: UpdateHobbyDto): Promise<Hobby> {
+    const hobby = await this.findOne(id);
+    Object.assign(hobby, dto);
+    return this.hobbyRepo.save(hobby);
+  }
+
+  async remove(id: string): Promise<{ deleted: true }> {
+    const hobby = await this.findOne(id);
+    hobby.is_active = false;
+    await this.hobbyRepo.save(hobby);
+    return { deleted: true };
   }
 
   async log(user: User, dto: CreateHobbyLogDto) {
@@ -49,5 +68,26 @@ export class HobbiesService {
       .andWhere(endDate ? 'log.log_date <= :endDate' : '1=1', { endDate })
       .orderBy('log.log_date', 'DESC')
       .getMany();
+  }
+
+  async findLog(id: string, userId: string): Promise<HobbyLog> {
+    const log = await this.hobbyLogRepo.findOne({ where: { id, user: { id: userId } } });
+    if (!log) throw new NotFoundException('Hobby log not found');
+    return log;
+  }
+
+  async updateLog(id: string, userId: string, dto: UpdateHobbyLogDto): Promise<HobbyLog> {
+    const log = await this.findLog(id, userId);
+    Object.assign(log, dto);
+    if (dto.duration_minutes !== undefined) {
+      log.points_earned = log.hobby.default_points_per_instance + Math.floor(dto.duration_minutes / 15);
+    }
+    return this.hobbyLogRepo.save(log);
+  }
+
+  async removeLog(id: string, userId: string): Promise<{ deleted: true }> {
+    const log = await this.findLog(id, userId);
+    await this.hobbyLogRepo.remove(log);
+    return { deleted: true };
   }
 }

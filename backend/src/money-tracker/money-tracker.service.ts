@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { CreateMoneyEntryDto } from './dto/money-entry.dto';
+import { CreateMoneyEntryDto, UpdateMoneyEntryDto } from './dto/money-entry.dto';
 import { MoneyEntry } from './entities/money-entry.entity';
 
 @Injectable()
@@ -11,6 +11,28 @@ export class MoneyTrackerService {
 
   create(user: User, dto: CreateMoneyEntryDto) {
     return this.repo.save(this.repo.create({ user, ...dto }));
+  }
+
+  findAll(userId: string) {
+    return this.repo.find({ where: { user: { id: userId } }, order: { log_date: 'DESC', created_at: 'DESC' } });
+  }
+
+  async findOne(id: string, userId: string) {
+    const entry = await this.repo.findOne({ where: { id, user: { id: userId } } });
+    if (!entry) throw new NotFoundException('Money entry not found');
+    return entry;
+  }
+
+  async update(id: string, userId: string, dto: UpdateMoneyEntryDto) {
+    const entry = await this.findOne(id, userId);
+    Object.assign(entry, dto);
+    return this.repo.save(entry);
+  }
+
+  async remove(id: string, userId: string) {
+    const entry = await this.findOne(id, userId);
+    await this.repo.remove(entry);
+    return { deleted: true };
   }
 
   async summary(userId: string) {

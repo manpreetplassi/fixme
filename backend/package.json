@@ -11,7 +11,7 @@
     "migration:run": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:revert",
     "migration:generate": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:generate src/database/migrations/GeneratedMigration",
-    "test": "ts-node -r tsconfig-paths/register test/analytics.service.spec.ts",
+    "test": "ts-node -r tsconfig-paths/register test/run-tests.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts"
   },
   "keywords": [],

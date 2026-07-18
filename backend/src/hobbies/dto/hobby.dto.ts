@@ -18,6 +18,19 @@ export class CreateHobbyLogDto {
   notes?: string;
 }
 
+export class UpdateHobbyLogDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  duration_minutes?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
+
 export class CreateHobbyDto {
   @ApiPropertyOptional()
   @IsString()
@@ -54,3 +67,5 @@ export class CreateHobbyDto {
   @Min(0)
   suggested_minutes_per_day?: number;
 }
+
+export class UpdateHobbyDto extends CreateHobbyDto {}

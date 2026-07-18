@@ -6,3 +6,9 @@ export class CreateMoneyEntryDto {
   @ApiPropertyOptional() @IsDateString() log_date: string;
   @ApiPropertyOptional() @IsOptional() @IsString() reason?: string;
 }
+
+export class UpdateMoneyEntryDto {
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) amount?: number;
+  @ApiPropertyOptional() @IsOptional() @IsDateString() log_date?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() reason?: string;
+}

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DailyLogsService } from '../daily-logs/daily-logs.service';
 import { User } from '../users/entities/user.entity';
-import { CreateReflectionDto } from './dto/reflection.dto';
+import { CreateReflectionDto, UpdateReflectionDto } from './dto/reflection.dto';
 import { Reflection } from './entities/reflection.entity';
 
 @Injectable()
@@ -31,6 +31,24 @@ export class ReflectionsService {
     const reflection = await this.repo.findOne({ where: { user: { id: userId }, reflection_date: date } });
     if (!reflection) throw new NotFoundException('Reflection not found');
     return reflection;
+  }
+
+  async findOne(id: string, userId: string) {
+    const reflection = await this.repo.findOne({ where: { id, user: { id: userId } } });
+    if (!reflection) throw new NotFoundException('Reflection not found');
+    return reflection;
+  }
+
+  async update(id: string, userId: string, dto: UpdateReflectionDto) {
+    const reflection = await this.findOne(id, userId);
+    Object.assign(reflection, dto);
+    return this.repo.save(reflection);
+  }
+
+  async remove(id: string, userId: string) {
+    const reflection = await this.findOne(id, userId);
+    await this.repo.remove(reflection);
+    return { deleted: true };
   }
 
   findWeek(userId: string) {
