@@ -132,6 +132,7 @@ Expected response:
 If `/api/auth/login` returns `500`, check `/api/health` first. A degraded database status normally means `DATABASE_URL` is wrong, the database is not reachable from Vercel, or migrations were not run.
 
 The backend imports migration classes directly so Vercel bundles them into the serverless function. Keep `DB_MIGRATIONS_RUN=true` for the first deploy to create the app tables.
+New lifestyle/routine features also use migrations, so keep `DB_MIGRATIONS_RUN=true` during redeploys until the Vercel backend has created `lifestyle_days`, `meal_entries`, `meal_templates`, and `lifestyle_activities`.
 
 ## Production Checklist
 

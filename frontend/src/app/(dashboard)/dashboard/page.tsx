@@ -5,13 +5,15 @@ import { PageHeader } from '@/components/layout/page-header';
 import { useTodayScore } from '@/hooks/use-daily-logs';
 import { useWeeklyAnalytics } from '@/hooks/use-analytics';
 import { useScreenSummary } from '@/hooks/use-today';
+import { useLifestyleAnalytics } from '@/hooks/use-lifestyle';
 
 export default function DashboardPage() {
   const score = useTodayScore();
   const weekly = useWeeklyAnalytics();
   const screen = useScreenSummary();
-  const isLoading = score.isLoading || weekly.isLoading || screen.isLoading;
-  const isError = score.isError || weekly.isError || screen.isError;
+  const lifestyle = useLifestyleAnalytics('week');
+  const isLoading = score.isLoading || weekly.isLoading || screen.isLoading || lifestyle.isLoading;
+  const isError = score.isError || weekly.isError || screen.isError || lifestyle.isError;
 
   const cards = [
     { label: 'Today Score', value: score.data?.dailyScore ?? '--' },
@@ -61,6 +63,41 @@ export default function DashboardPage() {
           </div>
         </section>
       ) : null}
+      {lifestyle.data ? (
+        <section className="mt-6 rounded-lg border border-black/10 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-xl font-black">Lifestyle pulse</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Meals, sleep, movement, water, and productivity this week.</p>
+            </div>
+            <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">{lifestyle.data.consistency}% consistency</p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-4">
+            <LifestyleMetric label="Avg sleep" value={`${Number(lifestyle.data.averageSleep ?? 0).toFixed(1)}h`} />
+            <LifestyleMetric label="Home cooked" value={`${lifestyle.data.homeCookedPercent ?? 0}%`} />
+            <LifestyleMetric label="Outside meals" value={lifestyle.data.outsideMeals ?? 0} />
+            <LifestyleMetric label="Coding hours" value={`${lifestyle.data.codingHours ?? 0}h`} />
+            <LifestyleMetric label="Fruit days" value={lifestyle.data.fruitDays ?? 0} />
+            <LifestyleMetric label="Avg water" value={`${Number(lifestyle.data.averageWaterIntake ?? 0).toFixed(1)}L`} />
+            <LifestyleMetric label="Gym days" value={lifestyle.data.gymDays ?? 0} />
+            <LifestyleMetric label="Sabzi" value={lifestyle.data.mostCommonSabzi ?? '--'} />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {(lifestyle.data.insights ?? []).slice(0, 4).map((insight: string) => (
+              <p key={insight} className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-100">{insight}</p>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function LifestyleMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-2 text-xl font-black">{value}</p>
     </div>
   );
 }

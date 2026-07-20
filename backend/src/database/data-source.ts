@@ -6,6 +6,10 @@ import { DailyTask } from '../daily-tasks/entities/daily-task.entity';
 import { HobbyLog } from '../hobbies/entities/hobby-log.entity';
 import { Hobby } from '../hobbies/entities/hobby.entity';
 import { LearningLog } from '../learning-logs/entities/learning-log.entity';
+import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.entity';
+import { LifestyleDay } from '../lifestyle/entities/lifestyle-day.entity';
+import { MealEntry } from '../lifestyle/entities/meal-entry.entity';
+import { MealTemplate } from '../lifestyle/entities/meal-template.entity';
 import { MoneyEntry } from '../money-tracker/entities/money-entry.entity';
 import { Reflection } from '../reflections/entities/reflection.entity';
 import { Reel } from '../reels-vault/entities/reel.entity';
@@ -23,7 +27,7 @@ loadEnv();
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: getDatabaseUrlFromEnv(),
-  entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn],
+  entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn, LifestyleDay, MealEntry, MealTemplate, LifestyleActivity],
   migrations,
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });

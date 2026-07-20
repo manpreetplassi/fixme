@@ -11,6 +11,7 @@ import { GeminiModule } from './gemini/gemini.module';
 import { HealthModule } from './health/health.module';
 import { HobbiesModule } from './hobbies/hobbies.module';
 import { LearningLogsModule } from './learning-logs/learning-logs.module';
+import { LifestyleModule } from './lifestyle/lifestyle.module';
 import { MoneyTrackerModule } from './money-tracker/money-tracker.module';
 import { ReflectionsModule } from './reflections/reflections.module';
 import { ReelsVaultModule } from './reels-vault/reels-vault.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './users/users.module';
     HealthModule,
     HobbiesModule,
     LearningLogsModule,
+    LifestyleModule,
     ReflectionsModule,
     ReelsVaultModule,
     MoneyTrackerModule,

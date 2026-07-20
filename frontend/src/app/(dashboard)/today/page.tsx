@@ -2,10 +2,12 @@
 
 import clsx from 'clsx';
 import { Bell, BellOff, Check, Clock, Moon, Plus, Send, Sun, Trash2, Video, X } from 'lucide-react';
+import Link from 'next/link';
 import { FormEvent, useMemo, useState } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { TodayRoutineItem } from '@/lib/api/today';
 import { useCreateRoutineItem, useDeleteRoutineItem, useSaveScreenCheckIn, useSendReminderDigest, useSetRoutineDone, useToday } from '@/hooks/use-today';
+import { useLifestyleToday } from '@/hooks/use-lifestyle';
 
 const priorityClass: Record<string, string> = {
   urgent: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-900',
@@ -48,6 +50,7 @@ export default function TodayPage() {
   const createItem = useCreateRoutineItem();
   const deleteItem = useDeleteRoutineItem();
   const reminderDigest = useSendReminderDigest();
+  const lifestyle = useLifestyleToday();
   const [form, setForm] = useState<RoutineForm>(initialForm);
   const [detailPeriod, setDetailPeriod] = useState<'morning' | 'night' | null>(null);
   const [contentType, setContentType] = useState('reel_short');
@@ -114,6 +117,23 @@ export default function TodayPage() {
               <p className="mt-3 text-3xl font-black">{today.data.screen.streaks.night}</p>
             </div>
           </section>
+
+          {lifestyle.data ? (
+            <section className="mb-6 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Lifestyle today</p>
+                  <h2 className="mt-2 text-2xl font-black">{lifestyle.data.score.percentage}% logged</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Meals {lifestyle.data.meals.length} / Activities {lifestyle.data.activities.length} / Water {Number(lifestyle.data.day.water_litres ?? 0)}L
+                  </p>
+                </div>
+                <Link href="/lifestyle" className="inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
+                  Open journal
+                </Link>
+              </div>
+            </section>
+          ) : null}
 
           {activeCheck && !activeCheck.is_done ? (
             <section className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-emerald-950 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">

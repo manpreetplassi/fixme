@@ -4,11 +4,12 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, Film, House, IndianRupee, LogOut, Settings, SquareCheckBig } from 'lucide-react';
+import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, Film, HeartPulse, House, IndianRupee, LogOut, Settings, SquareCheckBig } from 'lucide-react';
 import { useAuth, useLogout } from '@/hooks/use-auth';
 
 const navItems = [
   { href: '/today', label: 'Today', icon: CalendarCheck },
+  { href: '/lifestyle', label: 'Lifestyle', icon: HeartPulse },
   { href: '/dashboard', label: 'Dashboard', icon: House },
   { href: '/tracker', label: 'Tracker', icon: SquareCheckBig },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
