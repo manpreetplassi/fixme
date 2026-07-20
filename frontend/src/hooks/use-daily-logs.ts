@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createDailyLog, deleteDailyLog, getDailyLogs, getDailyTasks, getTodayScore, updateDailyLog } from '@/lib/api/daily-logs';
+import { createDailyLog, createDailyTask, deleteDailyLog, deleteDailyTask, getDailyLogs, getDailyTasks, getTodayScore, updateDailyLog, updateDailyTask } from '@/lib/api/daily-logs';
 
 export function useDailyTasks(dayType?: string) {
   return useQuery({
@@ -14,6 +14,36 @@ export function useDailyLogs(date?: string) {
   return useQuery({
     queryKey: ['daily-logs', date],
     queryFn: () => getDailyLogs(date),
+  });
+}
+
+function invalidateTracker(queryClient: ReturnType<typeof useQueryClient>) {
+  void queryClient.invalidateQueries({ queryKey: ['daily-tasks'] });
+  void queryClient.invalidateQueries({ queryKey: ['daily-logs'] });
+  void queryClient.invalidateQueries({ queryKey: ['today-score'] });
+}
+
+export function useCreateDailyTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDailyTask,
+    onSuccess: () => invalidateTracker(queryClient),
+  });
+}
+
+export function useUpdateDailyTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) => updateDailyTask(id, payload),
+    onSuccess: () => invalidateTracker(queryClient),
+  });
+}
+
+export function useDeleteDailyTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDailyTask,
+    onSuccess: () => invalidateTracker(queryClient),
   });
 }
 

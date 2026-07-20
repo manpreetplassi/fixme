@@ -7,6 +7,21 @@ export async function getDailyTasks(dayType?: string) {
   return response.data.data;
 }
 
+export async function createDailyTask(payload: Record<string, unknown>) {
+  const response = await apiClient.post('/daily-tasks', payload);
+  return response.data.data;
+}
+
+export async function updateDailyTask(id: string, payload: Record<string, unknown>) {
+  const response = await apiClient.patch(`/daily-tasks/${id}`, payload);
+  return response.data.data;
+}
+
+export async function deleteDailyTask(id: string) {
+  const response = await apiClient.delete(`/daily-tasks/${id}`);
+  return response.data.data;
+}
+
 export async function getDailyLogs(date?: string) {
   const response = await apiClient.get('/daily-logs', { params: date ? { date } : undefined });
   return response.data.data;
