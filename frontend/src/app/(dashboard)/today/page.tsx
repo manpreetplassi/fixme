@@ -125,7 +125,7 @@ export default function TodayPage() {
                   <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Lifestyle today</p>
                   <h2 className="mt-2 text-2xl font-black">{lifestyle.data.score.percentage}% logged</h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Meals {lifestyle.data.meals.length} / Activities {lifestyle.data.activities.length} / Water {Number(lifestyle.data.day.water_litres ?? 0)}L
+                    Meals {lifestyle.data.meals.length} / Activities {lifestyle.data.activities.length} / Score {lifestyle.data.score.percentage}%
                   </p>
                 </div>
                 <Link href="/lifestyle" className="inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">

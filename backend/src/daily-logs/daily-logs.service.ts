@@ -23,6 +23,24 @@ export class DailyLogsService {
     const task = await this.taskRepo.findOne({ where: { id: dto.task_id } });
     if (!task) throw new NotFoundException('Task not found');
 
+    const existing = await this.logRepo.findOne({
+      where: { user: { id: user.id }, task: { id: task.id }, log_date: dto.log_date },
+    });
+
+    if (existing) {
+      Object.assign(existing, {
+        status: dto.status ?? existing.status,
+        duration_minutes: dto.duration_minutes ?? existing.duration_minutes,
+        rating: dto.rating ?? existing.rating,
+        notes: dto.notes ?? existing.notes,
+        money_saved: dto.money_saved ?? existing.money_saved,
+      });
+      existing.points_earned = this.calculatePoints(task, existing.status);
+      const savedExisting = await this.logRepo.save(existing);
+      await this.streaksService.refreshUserStreaks(user.id);
+      return this.findOne(savedExisting.id, user.id);
+    }
+
     const log = this.logRepo.create({
       user,
       task,
@@ -30,6 +48,7 @@ export class DailyLogsService {
       status: dto.status ?? 'not_started',
       points_earned: this.calculatePoints(task, dto.status ?? 'not_started'),
       duration_minutes: dto.duration_minutes ?? null,
+      rating: dto.rating ?? null,
       notes: dto.notes ?? null,
       money_saved: dto.money_saved ?? 0,
     });

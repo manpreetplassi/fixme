@@ -56,7 +56,7 @@ export async function runSeed(dataSource: DataSource): Promise<void> {
         { name: 'Write Story/Journal', category: 'creative', icon: 'pen-line', suggested_minutes_per_day: 20, default_points_per_instance: 5, display_order: 4 },
         { name: 'Gurudwara Visit', category: 'spiritual', icon: 'sparkles', suggested_minutes_per_day: 60, default_points_per_instance: 6, display_order: 5 },
         { name: 'Bike Ride', category: 'sports', icon: 'bike', suggested_minutes_per_day: 60, default_points_per_instance: 8, is_weekend_only: true, display_order: 6 },
-        { name: 'Mocktails/Cocktails', category: 'social', icon: 'glass-water', suggested_minutes_per_day: 20, default_points_per_instance: 4, display_order: 7 },
+        { name: 'Mocktails/Cocktails', category: 'social', icon: 'glass', suggested_minutes_per_day: 20, default_points_per_instance: 4, display_order: 7 },
         { name: 'Swimming', category: 'sports', icon: 'waves', suggested_minutes_per_day: 45, default_points_per_instance: 8, is_weekend_only: true, display_order: 8 },
         { name: 'English Practice', category: 'learning', icon: 'languages', suggested_minutes_per_day: 15, default_points_per_instance: 5, display_order: 9 },
       ]),
@@ -67,7 +67,7 @@ export async function runSeed(dataSource: DataSource): Promise<void> {
   if (solutionsCount === 0) {
     await solutionRepo.save(
       solutionRepo.create([
-        { blocker: 'hunger', trigger: 'Feeling hungry', solution: 'Drink water and eat oats or soaked chia seeds.', action_items: ['Drink water', 'Eat prepared snack'], priority: 10 },
+        { blocker: 'hunger', trigger: 'Feeling hungry', solution: 'Eat oats, fruit, or soaked chia seeds.', action_items: ['Eat prepared snack'], priority: 10 },
         { blocker: 'energy', trigger: 'Feeling tired', solution: 'Do cervical relief stretches and take a short walk.', action_items: ['Stretch for 5 minutes', 'Walk for 10 minutes'], priority: 9 },
         { blocker: 'temptation', trigger: 'Tempted by porn', solution: 'Call your roommate or step outside immediately.', action_items: ['Leave the room', 'Call someone'], priority: 10 },
         { blocker: 'laziness', trigger: 'Movie watching spiral', solution: 'Stop the movie and do 5 minutes of exercise.', action_items: ['Pause the screen', 'Do pushups or walk'], priority: 8 },

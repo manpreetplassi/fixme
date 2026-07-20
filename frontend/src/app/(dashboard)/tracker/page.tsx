@@ -40,6 +40,13 @@ const statusOptions = [
   { value: 'cheated', label: 'Cheated' },
 ];
 
+const statusStyles: Record<string, string> = {
+  completed: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900',
+  not_started: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-800',
+  failed: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-900',
+  cheated: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900',
+};
+
 function formFromLog(log?: DailyLog): LogForm {
   return {
     status: log?.status ?? 'completed',
@@ -117,6 +124,22 @@ export default function TrackerPage() {
     );
   };
 
+  const quickSave = (task: DailyTask, log: DailyLog | undefined, status: string) => {
+    if (log) {
+      updateLog.mutate({ id: log.id, payload: { status } }, { onSuccess: resetForm });
+      return;
+    }
+
+    createLog.mutate(
+      {
+        task_id: task.id,
+        log_date: today,
+        status,
+      },
+      { onSuccess: resetForm },
+    );
+  };
+
   const isSaving = createLog.isPending || updateLog.isPending || deleteLog.isPending;
   const isLoading = tasks.isLoading || logs.isLoading;
   const isError = tasks.isError || logs.isError;
@@ -128,6 +151,27 @@ export default function TrackerPage() {
       {isError ? <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">Could not load tracker data.</p> : null}
       {!isLoading && !isError && (tasks.data ?? []).length === 0 ? (
         <p className="mb-4 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">No tasks are enabled for this day type.</p>
+      ) : null}
+
+      {!isLoading && !isError ? (
+        <section className="mb-4 grid gap-3 md:grid-cols-4">
+          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Tasks</p>
+            <p className="mt-1 text-2xl font-black">{(tasks.data ?? []).length}</p>
+          </div>
+          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Logged</p>
+            <p className="mt-1 text-2xl font-black">{(logs.data ?? []).length}</p>
+          </div>
+          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Done</p>
+            <p className="mt-1 text-2xl font-black">{(logs.data ?? []).filter((log: DailyLog) => log.status === 'completed').length}</p>
+          </div>
+          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Points</p>
+            <p className="mt-1 text-2xl font-black">{(logs.data ?? []).reduce((sum: number, log: DailyLog) => sum + Number(log.points_earned), 0)}</p>
+          </div>
+        </section>
       ) : null}
 
       <div className="grid gap-4">
@@ -150,7 +194,10 @@ export default function TrackerPage() {
                   </p>
                   {log ? (
                     <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                      {log.status.replace('_', ' ')} / {log.points_earned} pts
+                      <span className={`mr-2 rounded-full px-2 py-1 text-xs font-bold ring-1 ${statusStyles[log.status] ?? statusStyles.not_started}`}>
+                        {log.status.replace('_', ' ')}
+                      </span>
+                      {log.points_earned} pts
                       {log.duration_minutes ? ` / ${log.duration_minutes} min` : ''}
                       {log.rating ? ` / ${log.rating}/5` : ''}
                     </p>
@@ -158,7 +205,32 @@ export default function TrackerPage() {
                   {log?.notes ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{log.notes}</p> : null}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => quickSave(task, log, 'completed')}
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    <Check className="h-4 w-4" />
+                    Done
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => quickSave(task, log, 'not_started')}
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-900"
+                  >
+                    Pending
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => quickSave(task, log, 'failed')}
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
+                  >
+                    Failed
+                  </button>
                   {log ? (
                     <>
                       <button
@@ -188,7 +260,7 @@ export default function TrackerPage() {
                       className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
                     >
                       <Plus className="h-4 w-4" />
-                      Log
+                      Details
                     </button>
                   )}
                 </div>

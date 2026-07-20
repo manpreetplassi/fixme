@@ -7,7 +7,6 @@ export class UpsertLifestyleDayDto {
   @ApiPropertyOptional() @IsOptional() @IsString() sleep_time?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() sleep_hours?: number;
   @ApiPropertyOptional() @IsOptional() @IsIn(['excellent', 'good', 'average', 'poor', 'missed']) sleep_quality?: string;
-  @ApiPropertyOptional() @IsOptional() @IsNumber() water_litres?: number;
   @ApiPropertyOptional() @IsOptional() @IsIn(['great', 'good', 'okay', 'low', 'bad']) mood?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['low', 'medium', 'high']) morning_energy?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['low', 'medium', 'high']) night_energy?: string;

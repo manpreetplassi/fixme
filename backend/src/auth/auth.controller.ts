@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -18,7 +18,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Returns JWT token and user' })
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.register(dto);
-    res.cookie('token', result.accessToken, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('token', result.accessToken, this.authCookieOptions());
     return result;
   }
 
@@ -28,8 +28,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Returns JWT token and user' })
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(dto);
-    // Set httpOnly cookie as well as returning token in body
-    res.cookie('token', result.accessToken, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('token', result.accessToken, this.authCookieOptions());
     return result;
   }
 
@@ -37,7 +36,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Clear auth cookie' })
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('token');
+    res.clearCookie('token', this.authCookieOptions());
     return { message: 'Logged out' };
   }
 
@@ -48,5 +47,15 @@ export class AuthController {
   me(@CurrentUser() user: User) {
     const { password_hash, ...safe } = user;
     return safe;
+  }
+
+  private authCookieOptions(): CookieOptions {
+    const isProduction = process.env.NODE_ENV === 'production';
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
   }
 }

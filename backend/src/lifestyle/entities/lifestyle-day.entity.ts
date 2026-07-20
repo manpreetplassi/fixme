@@ -26,9 +26,6 @@ export class LifestyleDay {
   @Column({ type: 'varchar', nullable: true })
   sleep_quality: string | null;
 
-  @Column({ type: 'numeric', precision: 4, scale: 1, default: 0 })
-  water_litres: number;
-
   @Column({ type: 'varchar', nullable: true })
   mood: string | null;
 

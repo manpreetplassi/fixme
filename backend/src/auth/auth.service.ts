@@ -14,10 +14,11 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<{ accessToken: string; user: Omit<User, 'password_hash'> }> {
+    const email = dto.email.trim().toLowerCase();
     const password_hash = await bcrypt.hash(dto.password, 10);
     const user = await this.usersService.create({
-      email: dto.email,
-      name: dto.name,
+      email,
+      name: dto.name.trim(),
       password_hash,
     });
 
@@ -26,7 +27,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<{ accessToken: string; user: Omit<User, 'password_hash'> }> {
-    const user = await this.usersService.findByEmail(dto.email);
+    const user = await this.usersService.findByEmail(dto.email.trim().toLowerCase());
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, user.password_hash);

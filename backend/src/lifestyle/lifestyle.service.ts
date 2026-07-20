@@ -43,7 +43,6 @@ export class LifestyleService {
       sleep_time: dto.sleep_time ?? day.sleep_time,
       sleep_hours: dto.sleep_hours ?? day.sleep_hours,
       sleep_quality: dto.sleep_quality ?? day.sleep_quality,
-      water_litres: dto.water_litres ?? day.water_litres,
       mood: dto.mood ?? day.mood,
       morning_energy: dto.morning_energy ?? day.morning_energy,
       night_energy: dto.night_energy ?? day.night_energy,
@@ -177,7 +176,6 @@ export class LifestyleService {
     const fruitDays = new Set(meals.filter((meal) => meal.fruits || meal.food_items.some((item) => item.toLowerCase().includes('fruit'))).map((meal) => meal.meal_date)).size;
     const sabziCounts = this.countBy(meals.map((meal) => meal.sabzi_name).filter(Boolean) as string[]);
     const avgSleep = this.average(days.map((day) => Number(day.sleep_hours ?? 0)).filter(Boolean));
-    const avgWater = this.average(days.map((day) => Number(day.water_litres ?? 0)).filter(Boolean));
     const productiveMinutes = productivity.reduce((sum, entry) => sum + entry.duration_minutes, 0);
     const exerciseTypes = this.countBy(exercise.map((entry) => entry.name ?? 'Exercise'));
     const dailyScores = dates.map((date) => ({
@@ -205,7 +203,6 @@ export class LifestyleService {
       homeCookedMeals: homemadeMeals,
       homeCookedPercent: meals.length ? Math.round((homemadeMeals / meals.length) * 100) : 0,
       fruitDays,
-      averageWaterIntake: avgWater,
       mostCommonSabzi,
       sabziCounts,
       exerciseTypes,
@@ -269,7 +266,6 @@ export class LifestyleService {
       { label: 'Breakfast logged', done: meals.some((meal) => meal.meal_type === 'breakfast') },
       { label: 'Lunch logged', done: meals.some((meal) => meal.meal_type === 'lunch') },
       { label: 'Dinner logged', done: meals.some((meal) => meal.meal_type === 'dinner') },
-      { label: 'Water goal', done: Number(day?.water_litres ?? 0) >= 2 },
       { label: 'Exercise', done: activities.some((entry) => entry.activity_type === 'exercise') },
       { label: 'Productivity', done: activities.some((entry) => entry.activity_type === 'productivity') },
       { label: 'Sleep logged', done: Boolean(day?.sleep_hours || day?.sleep_time || day?.wake_time) },
@@ -291,7 +287,7 @@ export class LifestyleService {
     if (summary.codingHours > 0) insights.push(`You logged ${summary.codingHours} productive hours.`);
     const gymOrWalkDays = new Set(activities.filter((entry) => entry.activity_type === 'exercise').map((entry) => entry.activity_date)).size;
     if (gymOrWalkDays > 0) insights.push(`Exercise happened on ${gymOrWalkDays} day${gymOrWalkDays === 1 ? '' : 's'}; keep that rhythm gentle and repeatable.`);
-    if (!days.length && !meals.length && !activities.length) insights.push('Start with meals, water, sleep, and one activity. Small logs are enough.');
+    if (!days.length && !meals.length && !activities.length) insights.push('Start with meals, sleep, mood, and one activity. Small logs are enough.');
     return insights.slice(0, 6);
   }
 

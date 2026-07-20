@@ -19,7 +19,7 @@ export class LifestyleController {
   }
 
   @Patch('day')
-  @ApiOperation({ summary: 'Update daily health, sleep, mood, water, notes' })
+  @ApiOperation({ summary: 'Update daily health, sleep, mood, energy, notes' })
   upsertDay(@CurrentUser() user: User, @Body() dto: UpsertLifestyleDayDto) {
     return this.service.upsertDay(user, dto);
   }

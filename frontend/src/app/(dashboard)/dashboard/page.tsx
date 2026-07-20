@@ -68,7 +68,7 @@ export default function DashboardPage() {
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-xl font-black">Lifestyle pulse</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Meals, sleep, movement, water, and productivity this week.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Meals, sleep, movement, mood, and productivity this week.</p>
             </div>
             <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">{lifestyle.data.consistency}% consistency</p>
           </div>
@@ -78,7 +78,6 @@ export default function DashboardPage() {
             <LifestyleMetric label="Outside meals" value={lifestyle.data.outsideMeals ?? 0} />
             <LifestyleMetric label="Coding hours" value={`${lifestyle.data.codingHours ?? 0}h`} />
             <LifestyleMetric label="Fruit days" value={lifestyle.data.fruitDays ?? 0} />
-            <LifestyleMetric label="Avg water" value={`${Number(lifestyle.data.averageWaterIntake ?? 0).toFixed(1)}L`} />
             <LifestyleMetric label="Gym days" value={lifestyle.data.gymDays ?? 0} />
             <LifestyleMetric label="Sabzi" value={lifestyle.data.mostCommonSabzi ?? '--'} />
           </div>

@@ -9,7 +9,6 @@ export type LifestyleDay = {
   sleep_time: string | null;
   sleep_hours: number | null;
   sleep_quality: string | null;
-  water_litres: number;
   mood: string | null;
   morning_energy: string | null;
   night_energy: string | null;

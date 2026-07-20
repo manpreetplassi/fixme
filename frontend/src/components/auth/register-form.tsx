@@ -11,11 +11,17 @@ export function RegisterForm() {
   const [name, setName] = useState('FixMe User');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await register.mutateAsync({ name, email, password });
-    router.push('/dashboard');
+    setError('');
+    try {
+      await register.mutateAsync({ name: name.trim(), email: email.trim(), password });
+      router.push('/today');
+    } catch (err) {
+      setError(readApiError(err, 'Could not create account. Please check the form.'));
+    }
   }
 
   return (
@@ -35,13 +41,24 @@ export function RegisterForm() {
       <label className="block text-sm font-medium">
         Password
         <input type="password" className="mt-2 w-full rounded-2xl border bg-transparent px-4 py-3 outline-none" value={password} onChange={(event) => setPassword(event.target.value)} />
+        <span className="mt-2 block text-xs text-slate-500 dark:text-slate-400">Use 8+ chars with uppercase, lowercase, number, and special character.</span>
       </label>
       <button className="w-full rounded-2xl bg-sky-500 px-4 py-3 font-semibold text-white transition hover:bg-sky-600" disabled={register.isPending}>
         {register.isPending ? 'Creating...' : 'Create account'}
       </button>
+      {error ? <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{error}</p> : null}
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Already registered? <Link className="font-semibold text-sky-600" href="/login">Sign in</Link>
       </p>
     </form>
   );
+}
+
+function readApiError(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error && 'response' in error) {
+    const response = (error as { response?: { data?: { error?: { message?: string | string[] } } } }).response;
+    const message = response?.data?.error?.message;
+    return Array.isArray(message) ? message.join(', ') : message ?? fallback;
+  }
+  return fallback;
 }

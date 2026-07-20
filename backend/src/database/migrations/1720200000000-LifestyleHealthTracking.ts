@@ -12,7 +12,6 @@ export class LifestyleHealthTracking1720200000000 implements MigrationInterface 
         "sleep_time" character varying,
         "sleep_hours" numeric(4,1),
         "sleep_quality" character varying,
-        "water_litres" numeric(4,1) NOT NULL DEFAULT '0',
         "mood" character varying,
         "morning_energy" character varying,
         "night_energy" character varying,

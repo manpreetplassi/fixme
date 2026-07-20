@@ -105,7 +105,7 @@ export default function LifestylePage() {
 
   return (
     <div>
-      <PageHeader title="Lifestyle Journal" subtitle="Meals, water, sleep, exercise, productivity, mood, and searchable history." />
+      <PageHeader title="Lifestyle Journal" subtitle="Meals, sleep, exercise, productivity, mood, energy, and searchable history." />
 
       {today.isLoading ? <p className="mb-4 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">Loading lifestyle journal...</p> : null}
       {today.isError ? <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">Could not load lifestyle journal.</p> : null}
@@ -114,7 +114,6 @@ export default function LifestylePage() {
         <>
           <section className="mb-6 grid gap-4 md:grid-cols-4">
             <Metric label="Daily score" value={`${today.data.score.percentage}%`} />
-            <Metric label="Water" value={`${Number(day?.water_litres ?? 0)}L`} />
             <Metric label="Sleep" value={day?.sleep_hours ? `${day.sleep_hours}h` : '--'} />
             <Metric label="Productive" value={`${Math.round((today.data.activities.filter((entry: LifestyleActivity) => entry.activity_type === 'productivity').reduce((sum: number, entry: LifestyleActivity) => sum + entry.duration_minutes, 0) / 60) * 10) / 10}h`} />
           </section>
@@ -126,7 +125,6 @@ export default function LifestylePage() {
                 <Field label="Wake" type="time" value={day?.wake_time ?? ''} onChange={(value) => updateField('wake_time', value)} />
                 <Field label="Sleep" type="time" value={day?.sleep_time ?? ''} onChange={(value) => updateField('sleep_time', value)} />
                 <Field label="Sleep hours" type="number" value={day?.sleep_hours ?? ''} onChange={(value) => updateField('sleep_hours', value)} />
-                <Field label="Water litres" type="number" value={day?.water_litres ?? 0} onChange={(value) => updateField('water_litres', value)} />
                 <SelectField label="Sleep quality" value={day?.sleep_quality ?? ''} options={sleepQualities} onChange={(value) => updateField('sleep_quality', value)} />
                 <SelectField label="Mood" value={day?.mood ?? ''} options={moods} onChange={(value) => updateField('mood', value)} />
                 <SelectField label="Morning energy" value={day?.morning_energy ?? ''} options={energies} onChange={(value) => updateField('morning_energy', value)} />
@@ -214,7 +212,6 @@ export default function LifestylePage() {
             <Metric label="Fruit days" value={weekly.data?.fruitDays ?? 0} />
             <Metric label="Most common sabzi" value={weekly.data?.mostCommonSabzi ?? '--'} />
             <Metric label="Monthly consistency" value={`${monthly.data?.consistency ?? 0}%`} />
-            <Metric label="Average water" value={`${Number(weekly.data?.averageWaterIntake ?? 0).toFixed(1)}L`} />
           </section>
 
           <section className="rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
