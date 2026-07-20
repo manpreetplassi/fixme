@@ -16,6 +16,7 @@ import { ReflectionsModule } from './reflections/reflections.module';
 import { ReelsVaultModule } from './reels-vault/reels-vault.module';
 import { SolutionsBankModule } from './solutions-bank/solutions-bank.module';
 import { StreaksModule } from './streaks/streaks.module';
+import { TodayModule } from './today/today.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -37,6 +38,7 @@ import { UsersModule } from './users/users.module';
     DailyTasksModule,
     DailyLogsModule,
     StreaksModule,
+    TodayModule,
     HealthModule,
     HobbiesModule,
     LearningLogsModule,

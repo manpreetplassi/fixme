@@ -1,14 +1,17 @@
 'use client';
 
+import clsx from 'clsx';
 import { PageHeader } from '@/components/layout/page-header';
 import { useTodayScore } from '@/hooks/use-daily-logs';
 import { useWeeklyAnalytics } from '@/hooks/use-analytics';
+import { useScreenSummary } from '@/hooks/use-today';
 
 export default function DashboardPage() {
   const score = useTodayScore();
   const weekly = useWeeklyAnalytics();
-  const isLoading = score.isLoading || weekly.isLoading;
-  const isError = score.isError || weekly.isError;
+  const screen = useScreenSummary();
+  const isLoading = score.isLoading || weekly.isLoading || screen.isLoading;
+  const isError = score.isError || weekly.isError || screen.isError;
 
   const cards = [
     { label: 'Today Score', value: score.data?.dailyScore ?? '--' },
@@ -34,6 +37,44 @@ export default function DashboardPage() {
           No tasks completed today yet. Start from Tracker to build today&apos;s score.
         </p>
       ) : null}
+      {screen.data ? (
+        <section className="mt-6 rounded-lg border border-black/10 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-xl font-black">Screen check-ins</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Last 7 days, morning and night.</p>
+            </div>
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              {screen.data.streaks.morning} clean mornings / {screen.data.streaks.night} clean nights
+            </p>
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {screen.data.week.map((day) => (
+              <div key={day.date} className="rounded-lg border border-slate-200 p-3 text-center dark:border-slate-800">
+                <p className="mb-2 text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400">{day.date.slice(5)}</p>
+                <div className="flex justify-center gap-2">
+                  <StatusDot label="Morning" watched={day.morning?.watched} done={Boolean(day.morning)} />
+                  <StatusDot label="Night" watched={day.night?.watched} done={Boolean(day.night)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
+  );
+}
+
+function StatusDot({ label, watched, done }: { label: string; watched?: boolean; done: boolean }) {
+  return (
+    <span
+      title={`${label}: ${done ? (watched ? 'watched' : 'clean') : 'not checked'}`}
+      className={clsx(
+        'inline-flex h-5 w-5 rounded-full ring-2 ring-white dark:ring-slate-950',
+        !done && 'bg-slate-300 dark:bg-slate-700',
+        done && watched === false && 'bg-emerald-500',
+        done && watched === true && 'bg-red-500',
+      )}
+    />
   );
 }

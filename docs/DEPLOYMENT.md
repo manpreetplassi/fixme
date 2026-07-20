@@ -105,6 +105,8 @@ Configure these in the backend Vercel project:
 | `GEMINI_API_KEY` | empty or real key | No | Leave empty to use fallback behavior. |
 | `FRONTEND_URL` | `https://your-project.vercel.app` | Yes | Single frontend URL fallback. |
 | `FRONTEND_URLS` | `https://your-project.vercel.app,https://your-domain.com` | Recommended | Comma-separated allowed frontend origins for CORS. |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | empty or SMTP values | No | Optional Today reminder digest. If missing, reminders skip silently. |
+| `REMINDER_EMAIL_FROM` / `REMINDER_EMAIL_TO` | empty or email addresses | No | Optional sender/recipient for Today digest. |
 | `PORT` | `3001` | Depends | Many hosts inject this automatically. |
 
 After adding a custom Vercel domain, also add it to backend `FRONTEND_URLS`.
