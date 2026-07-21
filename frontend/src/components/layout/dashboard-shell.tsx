@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, Film, HeartPulse, House, IndianRupee, LogOut, Settings, SquareCheckBig } from 'lucide-react';
 import { useAuth, useLogout } from '@/hooks/use-auth';
 
@@ -21,20 +21,40 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-const primaryMobileItems = navItems.slice(0, 5);
-const secondaryMobileItems = navItems.slice(5);
+
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
   const logout = useLogout();
+  const [mobileNavVisible, setMobileNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (auth.error || (!auth.isLoading && !auth.data)) {
       router.replace('/login');
     }
   }, [auth.data, auth.error, auth.isLoading, router]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY.current;
+
+      if (currentScrollY < 24) {
+        setMobileNavVisible(true);
+      } else if (Math.abs(delta) > 8) {
+        setMobileNavVisible(delta < 0);
+      }
+
+      lastScrollY.current = Math.max(currentScrollY, 0);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (auth.isLoading) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading your dashboard...</div>;
@@ -98,9 +118,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/92 px-3 pb-[calc(0.55rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_44px_rgba(15,23,42,0.16)] backdrop-blur dark:border-white/10 dark:bg-slate-950/92 lg:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
-          {primaryMobileItems.map((item) => {
+      <nav
+        className={clsx(
+          'fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/92 pb-[env(safe-area-inset-bottom)] shadow-[0_-14px_44px_rgba(15,23,42,0.16)] backdrop-blur transition-transform duration-300 ease-out dark:border-white/10 dark:bg-slate-950/92 lg:hidden',
+          mobileNavVisible ? 'translate-y-0' : 'translate-y-[calc(100%+1rem)]',
+        )}
+      >
+        <div className="flex overflow-x-auto scrollbar-none">
+          {navItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
             return (
@@ -108,31 +133,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={clsx(
-                  'tap-target flex flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-bold transition',
-                  active ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'text-slate-500 active:bg-slate-100 dark:text-slate-300 dark:active:bg-slate-900',
+                  'tap-target flex min-w-[4.5rem] flex-1 flex-col items-center justify-center gap-1 px-2 py-2 text-[10px] font-bold transition',
+                  active ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500',
                 )}
               >
-                <Icon className="h-5 w-5" />
-                <span className="max-w-full truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="mx-auto mt-2 flex max-w-md gap-2 overflow-x-auto pb-1">
-          {secondaryMobileItems.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={clsx(
-                  'tap-target inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold',
-                  active ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-200' : 'border-slate-200 bg-white text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300',
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
+                <Icon className={clsx('h-5 w-5', active && 'drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]')} />
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
