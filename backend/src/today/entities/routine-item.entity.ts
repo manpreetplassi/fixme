@@ -37,6 +37,21 @@ export class RoutineItem {
   @Column({ default: 0 })
   display_order: number;
 
+  @Column({ type: 'int', default: 0 })
+  points: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  legacy_task_id: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  icon: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  plan_id: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  linked_money_entry_id: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 

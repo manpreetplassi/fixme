@@ -37,6 +37,12 @@ export class LifestyleActivity {
   @Column({ type: 'text', nullable: true })
   notes: string | null;
 
+  @Column({ type: 'uuid', nullable: true })
+  source_hobby_log_id: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  linked_money_entry_id: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 

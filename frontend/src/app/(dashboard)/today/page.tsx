@@ -103,23 +103,26 @@ export default function TodayPage() {
 
       {today.data ? (
         <>
-          <section className="mb-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <section className="mb-4 grid grid-cols-3 gap-2 sm:mb-6 sm:gap-4">
+            <div className="game-card p-3 sm:p-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">Routine progress</p>
-              <p className="mt-3 text-3xl font-black">{completeCount}/{totalCount}</p>
+              <p className="mt-2 text-2xl font-black sm:mt-3 sm:text-3xl">{completeCount}/{totalCount}</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
+                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${totalCount ? (completeCount / totalCount) * 100 : 0}%` }} />
+              </div>
             </div>
-            <div className="rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <div className="game-card p-3 sm:p-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">Clean mornings</p>
-              <p className="mt-3 text-3xl font-black">{today.data.screen.streaks.morning}</p>
+              <p className="mt-2 text-2xl font-black sm:mt-3 sm:text-3xl">{today.data.screen.streaks.morning}</p>
             </div>
-            <div className="rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <div className="game-card p-3 sm:p-5">
               <p className="text-sm text-slate-500 dark:text-slate-400">Clean nights</p>
-              <p className="mt-3 text-3xl font-black">{today.data.screen.streaks.night}</p>
+              <p className="mt-2 text-2xl font-black sm:mt-3 sm:text-3xl">{today.data.screen.streaks.night}</p>
             </div>
           </section>
 
           {lifestyle.data ? (
-            <section className="mb-6 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+            <section className="app-card mb-4 p-4 sm:mb-6 sm:p-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Lifestyle today</p>
@@ -143,11 +146,11 @@ export default function TodayPage() {
                   <h2 className="mt-2 text-2xl font-black">{activeCheck.title}</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => markClean(activeCheck.period)} disabled={saveCheckIn.isPending} className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300">
+                  <button onClick={() => markClean(activeCheck.period)} disabled={saveCheckIn.isPending} className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300 sm:flex-none">
                     <Check className="h-4 w-4" />
                     Nothing watched
                   </button>
-                  <button onClick={() => setDetailPeriod(activeCheck.period ?? null)} disabled={saveCheckIn.isPending} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 px-4 py-3 text-sm font-semibold hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-800 dark:hover:bg-emerald-950">
+                  <button onClick={() => setDetailPeriod(activeCheck.period ?? null)} disabled={saveCheckIn.isPending} className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-emerald-300 px-4 py-3 text-sm font-semibold hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-800 dark:hover:bg-emerald-950 sm:flex-none">
                     <Video className="h-4 w-4" />
                     Watched
                   </button>
@@ -157,7 +160,7 @@ export default function TodayPage() {
           ) : null}
 
           {detailPeriod ? (
-            <form onSubmit={submitWatched} className="mb-6 grid gap-4 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70 md:grid-cols-4">
+            <form onSubmit={submitWatched} className="app-card mb-4 grid gap-3 p-4 sm:mb-6 sm:gap-4 sm:p-5 md:grid-cols-4">
               <select value={contentType} onChange={(event) => setContentType(event.target.value)} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
                 <option value="reel_short">Reel / short</option>
                 <option value="youtube">YouTube</option>
@@ -168,11 +171,11 @@ export default function TodayPage() {
               <input value={titleNote} onChange={(event) => setTitleNote(event.target.value)} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800 md:col-span-2" placeholder="Optional title or note" />
               {detailPeriod === 'night' ? <input type="time" value={stoppedAt} onChange={(event) => setStoppedAt(event.target.value)} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" /> : null}
               <div className="flex gap-2 md:col-span-4">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-600 disabled:bg-slate-300" disabled={saveCheckIn.isPending}>
+                <button className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-600 disabled:bg-slate-300 sm:flex-none" disabled={saveCheckIn.isPending}>
                   <Check className="h-4 w-4" />
                   Save check-in
                 </button>
-                <button type="button" onClick={() => setDetailPeriod(null)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900">
+                <button type="button" onClick={() => setDetailPeriod(null)} className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900 sm:flex-none">
                   <X className="h-4 w-4" />
                   Cancel
                 </button>
@@ -180,7 +183,7 @@ export default function TodayPage() {
             </form>
           ) : null}
 
-          <section className="mb-6 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <section className="app-card mb-4 p-4 sm:mb-6 sm:p-5">
             <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <h2 className="text-xl font-black">Time-blocked routine</h2>
               <button onClick={() => reminderDigest.mutate(today.data.date)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900">
@@ -202,7 +205,7 @@ export default function TodayPage() {
             </div>
           </section>
 
-          <form onSubmit={submitRoutine} className="grid gap-3 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70 md:grid-cols-6">
+          <form onSubmit={submitRoutine} className="app-card grid gap-3 p-4 sm:p-5 md:grid-cols-6">
             <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800 md:col-span-2" placeholder="Routine item" required />
             <input value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Category" required />
             <input type="time" value={form.time_block} onChange={(event) => setForm((current) => ({ ...current, time_block: event.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" />
@@ -235,9 +238,9 @@ export default function TodayPage() {
 function RoutineRow({ item, onDone, onWatched, onDelete, busy }: { item: TodayRoutineItem; onDone: () => void; onWatched: () => void; onDelete: () => void; busy: boolean }) {
   const isScreen = item.type === 'screen_checkin';
   return (
-    <article className={clsx('flex flex-col gap-4 rounded-lg border p-4 md:flex-row md:items-center md:justify-between', item.is_done ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20' : 'border-black/10 bg-white/70 dark:border-white/10 dark:bg-slate-950/50')}>
+    <article className={clsx('flex flex-col gap-4 rounded-2xl border p-3 sm:p-4 md:flex-row md:items-center md:justify-between', item.is_done ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20' : 'border-black/10 bg-white/70 dark:border-white/10 dark:bg-slate-950/50')}>
       <div className="flex items-start gap-3">
-        <button onClick={onDone} disabled={busy} className={clsx('mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border', item.is_done ? 'bg-emerald-500 text-white' : 'border-slate-300 dark:border-slate-700')}>
+        <button onClick={onDone} disabled={busy} className={clsx('tap-target mt-1 inline-flex shrink-0 items-center justify-center rounded-2xl border', item.is_done ? 'bg-emerald-500 text-white' : 'border-slate-300 dark:border-slate-700')}>
           {item.is_done ? <Check className="h-4 w-4" /> : null}
         </button>
         <div>
@@ -251,21 +254,21 @@ function RoutineRow({ item, onDone, onWatched, onDelete, busy }: { item: TodayRo
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {item.time_block ? (
-          <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
+          <span className="tap-target inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
             <Clock className="h-4 w-4" />
             {item.time_block}
           </span>
         ) : null}
-        <span title={item.reminder_enabled ? 'Reminder enabled' : 'Reminder off'} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800">
+        <span title={item.reminder_enabled ? 'Reminder enabled' : 'Reminder off'} className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
           {item.reminder_enabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
         </span>
         {isScreen ? (
-          <button onClick={onWatched} disabled={busy || item.is_done} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100 disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-900">
+          <button onClick={onWatched} disabled={busy || item.is_done} className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100 disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-900 sm:flex-none">
             {item.period === 'morning' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             Watched
           </button>
         ) : (
-          <button onClick={onDelete} disabled={busy} title="Delete routine item" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40">
+          <button onClick={onDelete} disabled={busy} title="Delete routine item" className="tap-target inline-flex items-center justify-center rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40">
             <Trash2 className="h-4 w-4" />
           </button>
         )}

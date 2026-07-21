@@ -13,6 +13,7 @@ type DailyTask = {
   points: number;
   priority: string;
   category: string;
+  icon: string | null;
   display_order: number;
   is_enabled: boolean;
 };
@@ -104,7 +105,7 @@ function taskFormFromTask(task?: DailyTask): TaskForm {
     priority: task?.priority ?? 'medium',
     points: task?.points?.toString() ?? '5',
     category: task?.category ?? 'habits',
-    icon: '',
+    icon: task?.icon ?? '',
     display_order: task?.display_order?.toString() ?? '0',
   };
 }
@@ -235,7 +236,7 @@ export default function TrackerPage() {
         <p className="mb-4 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">No tasks are enabled for this day type.</p>
       ) : null}
 
-      <section className="mb-4 rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+      <section className="app-card mb-4 p-4 sm:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-xl font-black">Tracker tasks</h2>
@@ -248,7 +249,7 @@ export default function TrackerPage() {
               setEditingTaskId(null);
               setTaskForm({ ...emptyTaskForm, day_type: dayType });
             }}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600"
+            className="tap-target inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600"
           >
             <Plus className="h-4 w-4" />
             New task
@@ -256,51 +257,57 @@ export default function TrackerPage() {
         </div>
 
         {showTaskForm ? (
-          <form onSubmit={submitTask} className="mt-5 grid gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <form onSubmit={submitTask} className="fixed inset-x-0 bottom-0 z-50 grid max-h-[86vh] gap-3 overflow-y-auto bottom-sheet sm:static sm:mt-5 sm:max-h-none sm:overflow-visible sm:rounded-none sm:border-t sm:border-slate-200 sm:bg-transparent sm:p-0 sm:pt-4 sm:shadow-none sm:dark:border-slate-800">
+            <div className="flex items-center justify-between gap-3 sm:hidden">
+              <h3 className="text-lg font-black">{editingTaskId ? 'Edit task' : 'Create task'}</h3>
+              <button type="button" onClick={resetTaskForm} className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <div className="grid gap-3 md:grid-cols-4">
               <label className="grid gap-1 text-sm font-medium md:col-span-2">
                 Name
-                <input required value={taskForm.name} onChange={(event) => setTaskForm((current) => ({ ...current, name: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+                <input required value={taskForm.name} onChange={(event) => setTaskForm((current) => ({ ...current, name: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Category
-                <input required value={taskForm.category} onChange={(event) => setTaskForm((current) => ({ ...current, category: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+                <input required value={taskForm.category} onChange={(event) => setTaskForm((current) => ({ ...current, category: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Points
-                <input required type="number" min="0" value={taskForm.points} onChange={(event) => setTaskForm((current) => ({ ...current, points: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+                <input required type="number" min="0" value={taskForm.points} onChange={(event) => setTaskForm((current) => ({ ...current, points: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Day type
-                <select value={taskForm.day_type} onChange={(event) => setTaskForm((current) => ({ ...current, day_type: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950">
+                <select value={taskForm.day_type} onChange={(event) => setTaskForm((current) => ({ ...current, day_type: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950">
                   {dayTypeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Priority
-                <select value={taskForm.priority} onChange={(event) => setTaskForm((current) => ({ ...current, priority: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950">
+                <select value={taskForm.priority} onChange={(event) => setTaskForm((current) => ({ ...current, priority: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950">
                   {priorityOptions.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Icon
-                <input value={taskForm.icon} onChange={(event) => setTaskForm((current) => ({ ...current, icon: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+                <input value={taskForm.icon} onChange={(event) => setTaskForm((current) => ({ ...current, icon: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Order
-                <input type="number" min="0" value={taskForm.display_order} onChange={(event) => setTaskForm((current) => ({ ...current, display_order: event.target.value }))} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+                <input type="number" min="0" value={taskForm.display_order} onChange={(event) => setTaskForm((current) => ({ ...current, display_order: event.target.value }))} className="tap-target rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
               </label>
             </div>
             <label className="grid gap-1 text-sm font-medium">
               Description
-              <textarea value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} rows={2} className="resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
+              <textarea value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} rows={2} className="resize-none rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950" />
             </label>
             <div className="flex flex-wrap justify-end gap-2">
-              <button type="button" onClick={resetTaskForm} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900">
+              <button type="button" onClick={resetTaskForm} className="tap-target hidden items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900 sm:inline-flex">
                 <X className="h-4 w-4" />
                 Cancel
               </button>
-              <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
+              <button type="submit" disabled={isSaving} className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 sm:flex-none">
                 {editingTaskId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 {editingTaskId ? 'Save task' : 'Create task'}
               </button>
@@ -310,20 +317,20 @@ export default function TrackerPage() {
       </section>
 
       {!isLoading && !isError ? (
-        <section className="mb-4 grid gap-3 md:grid-cols-4">
-          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+        <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="game-card">
             <p className="text-xs text-slate-500 dark:text-slate-400">Tasks</p>
             <p className="mt-1 text-2xl font-black">{(tasks.data ?? []).length}</p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <div className="game-card">
             <p className="text-xs text-slate-500 dark:text-slate-400">Logged</p>
             <p className="mt-1 text-2xl font-black">{(logs.data ?? []).length}</p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <div className="game-card">
             <p className="text-xs text-slate-500 dark:text-slate-400">Done</p>
             <p className="mt-1 text-2xl font-black">{(logs.data ?? []).filter((log: DailyLog) => log.status === 'completed').length}</p>
           </div>
-          <div className="rounded-lg border border-black/10 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+          <div className="game-card">
             <p className="text-xs text-slate-500 dark:text-slate-400">Points</p>
             <p className="mt-1 text-2xl font-black">{(logs.data ?? []).reduce((sum: number, log: DailyLog) => sum + Number(log.points_earned), 0)}</p>
           </div>
@@ -339,7 +346,7 @@ export default function TrackerPage() {
           return (
             <div
               key={task.id}
-              className="rounded-lg border border-black/10 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/70"
+              className="app-card p-4 sm:p-5"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -366,7 +373,7 @@ export default function TrackerPage() {
                     type="button"
                     onClick={() => quickSave(task, log, 'completed')}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 sm:flex-none"
                   >
                     <Check className="h-4 w-4" />
                     Done
@@ -375,7 +382,7 @@ export default function TrackerPage() {
                     type="button"
                     onClick={() => quickSave(task, log, 'not_started')}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-900"
+                    className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-900 sm:flex-none"
                   >
                     Pending
                   </button>
@@ -383,7 +390,7 @@ export default function TrackerPage() {
                     type="button"
                     onClick={() => quickSave(task, log, 'failed')}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
+                    className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40 sm:flex-none"
                   >
                     Failed
                   </button>
@@ -394,7 +401,7 @@ export default function TrackerPage() {
                         onClick={() => startEdit(log)}
                         disabled={isSaving}
                         title="Edit log"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
+                        className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -403,7 +410,7 @@ export default function TrackerPage() {
                         onClick={() => deleteLog.mutate(log.id, { onSuccess: resetForm })}
                         disabled={isSaving}
                         title="Delete log"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
+                        className="tap-target inline-flex items-center justify-center rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -413,29 +420,32 @@ export default function TrackerPage() {
                       type="button"
                       onClick={() => startCreate(task.id)}
                       disabled={isSaving}
-                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      className="tap-target inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 sm:flex-none"
                     >
                       <Plus className="h-4 w-4" />
                       Details
                     </button>
                   )}
+                  <span className="hidden h-8 w-px bg-slate-200 dark:bg-slate-800 sm:inline-block" />
                   <button
                     type="button"
                     onClick={() => startTaskEdit(task)}
                     disabled={isSaving}
                     title="Edit task"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
+                    className="tap-target inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
                   >
                     <Pencil className="h-4 w-4" />
+                    <span>Task</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => deleteTask.mutate(task.id, { onSuccess: resetForm })}
                     disabled={isSaving}
                     title="Remove task and its logs"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
+                    className="tap-target inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 px-3 text-xs font-bold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
                   >
                     <Trash2 className="h-4 w-4" />
+                    <span>Task</span>
                   </button>
                 </div>
               </div>

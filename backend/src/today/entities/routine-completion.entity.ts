@@ -32,6 +32,24 @@ export class RoutineCompletion {
   @Column({ type: 'text', nullable: true })
   note: string | null;
 
+  @Column({ default: 'not_started' })
+  status: string;
+
+  @Column({ default: 0 })
+  points_earned: number;
+
+  @Column({ type: 'int', nullable: true })
+  duration_minutes: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  rating: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  legacy_log_id: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  linked_money_entry_id: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 }
