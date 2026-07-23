@@ -1,9 +1,11 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { deleteMyData, getDataCounts, getProfile, updateGoals, updateProfile } from '@/lib/api/users';
-import { TimePicker } from '@/components/ui/time-picker';
+import { deleteMyData, getDataCounts } from '@/lib/api/users';
+import { navItems } from '@/components/layout/dashboard-shell';
+import { useNavVisibility } from '@/hooks/use-nav-visibility';
 
 const CATEGORIES: { key: string; label: string; dependsOn?: string[] }[] = [
   { key: 'routine_completions', label: 'Routine completion history' },
@@ -18,21 +20,7 @@ const CATEGORIES: { key: string; label: string; dependsOn?: string[] }[] = [
 ];
 
 export default function SettingsPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [form, setForm] = useState<Record<string, string>>({
-    name: '',
-    email: '',
-    bio: '',
-    wake_target: '',
-    sleep_target: '',
-    exercise_minutes_target: '',
-    daily_zomato_avoidance_savings: '',
-    weekly_reward_threshold: '',
-    preferred_hobbies: '',
-    addiction_label: '',
-  });
+  const { hidden, toggle } = useNavVisibility();
 
   // delete-data state
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -43,73 +31,20 @@ export default function SettingsPage() {
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    void getProfile()
-      .then((profile) => {
-        setForm({
-          name: profile.name ?? '',
-          email: profile.email ?? '',
-          bio: profile.bio ?? '',
-          wake_target: profile.wake_target ?? '',
-          sleep_target: profile.sleep_target ?? '',
-          exercise_minutes_target: String(profile.exercise_minutes_target ?? ''),
-          daily_zomato_avoidance_savings: String(profile.daily_zomato_avoidance_savings ?? ''),
-          weekly_reward_threshold: String(profile.weekly_reward_threshold ?? ''),
-          preferred_hobbies: (profile.preferred_hobbies ?? []).join(', '),
-          addiction_label: profile.addiction_label ?? 'addiction',
-        });
-      })
-      .catch(() => setMessage('Could not load profile settings.'))
-      .finally(() => setIsLoading(false));
-
     void getDataCounts()
       .then(setCounts)
       .catch(() => setCounts({}))
       .finally(() => setCountsLoading(false));
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSaving(true);
-    setMessage(null);
-    try {
-      await updateProfile({
-        name: form.name,
-        email: form.email,
-        bio: form.bio,
-        preferred_hobbies: form.preferred_hobbies
-          .split(',')
-          .map((h) => h.trim())
-          .filter(Boolean),
-        addiction_label: form.addiction_label.trim() || 'addiction',
-      });
-      await updateGoals({
-        wake_target: form.wake_target,
-        sleep_target: form.sleep_target,
-        exercise_minutes_target: Number(form.exercise_minutes_target || 0),
-        daily_zomato_avoidance_savings: Number(form.daily_zomato_avoidance_savings || 0),
-        weekly_reward_threshold: Number(form.weekly_reward_threshold || 0),
-      });
-      setMessage('Settings saved.');
-    } catch {
-      setMessage('Could not save settings.');
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
   function toggleCategory(key: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   }
 
-  // categories that are implicitly required by a selected item but not yet checked
   const impliedWarnings = CATEGORIES.filter(
     (cat) => cat.dependsOn?.some((dep) => selected.has(dep)) && !selected.has(cat.key),
   );
@@ -118,13 +53,11 @@ export default function SettingsPage() {
     setDeleting(true);
     setDeleteMessage(null);
     try {
-      const selectedCategories = Array.from(selected);
-      const result = await deleteMyData(selectedCategories);
+      const result = await deleteMyData(Array.from(selected));
       const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
       setDeleteMessage(`Deleted ${total} records across ${Object.keys(result.deleted).length} categories.`);
       setSelected(new Set());
       setConfirming(false);
-      // refresh counts
       const fresh = await getDataCounts();
       setCounts(fresh);
     } catch {
@@ -140,46 +73,48 @@ export default function SettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="Settings" subtitle="Keep your profile and goals aligned with the habits you are trying to build." />
+      <PageHeader title="Settings" subtitle="Manage your navigation, data, and app preferences." />
 
-      {/* Profile & Goals form */}
-      <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-black/10 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
-        {isLoading ? <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700">Loading settings...</p> : null}
-        {message ? <p className="rounded-lg border border-slate-200 p-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">{message}</p> : null}
-        {[
-          ['name', 'Name'],
-          ['email', 'Email'],
-          ['bio', 'Bio'],
-          ['exercise_minutes_target', 'Exercise Minutes'],
-          ['daily_zomato_avoidance_savings', 'Daily Savings Target'],
-          ['weekly_reward_threshold', 'Reward Threshold'],
-          ['preferred_hobbies', 'Preferred Hobbies'],
-          ['addiction_label', 'Addiction Label (private, only visible to you)'],
-        ].map(([key, label]) => (
-          <label key={key} className="block text-sm font-medium">
-            {label}
-            <input
-              className="mt-2 w-full rounded-lg border border-slate-200 bg-transparent px-4 py-3 dark:border-slate-800"
-              value={form[key] ?? ''}
-              onChange={(e) => setForm((c) => ({ ...c, [key]: e.target.value }))}
-              disabled={isLoading || isSaving}
-            />
-          </label>
-        ))}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Wake Target
-            <TimePicker value={form.wake_target} onChange={(v) => setForm((c) => ({ ...c, wake_target: v }))} />
-          </label>
-          <label className="block text-sm font-medium">
-            Sleep Target
-            <TimePicker value={form.sleep_target} onChange={(v) => setForm((c) => ({ ...c, sleep_target: v }))} />
-          </label>
+      {/* Nav visibility */}
+      <div className="grid gap-4 rounded-lg border border-black/10 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/70">
+        <div>
+          <p className="text-base font-semibold">Navigation tabs</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Hide tabs you don&apos;t use. Hidden tabs are still accessible from Settings. Changes are saved locally on this device.
+          </p>
         </div>
-        <button disabled={isLoading || isSaving} className="rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300">
-          {isSaving ? 'Saving...' : 'Save settings'}
-        </button>
-      </form>
+        <div className="grid gap-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const visible = !hidden.has(item.href);
+            return (
+              <div
+                key={item.href}
+                className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-4 py-3 dark:border-slate-800"
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`h-4 w-4 ${visible ? 'text-emerald-500' : 'text-slate-400'}`} />
+                  <span className={`text-sm font-medium ${visible ? '' : 'text-slate-400 line-through dark:text-slate-600'}`}>
+                    {item.label}
+                  </span>
+                </div>
+                <button
+                  onClick={() => toggle(item.href)}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                    visible
+                      ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
+                      : 'border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900'
+                  }`}
+                >
+                  {visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  {visible ? 'Visible' : 'Hidden'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-600">Settings tab is always visible and cannot be hidden.</p>
+      </div>
 
       {/* Delete My Data */}
       <div className="grid gap-4 rounded-lg border border-red-200 bg-white/80 p-6 shadow-sm dark:border-red-900/40 dark:bg-slate-950/70">
@@ -197,12 +132,7 @@ export default function SettingsPage() {
             {CATEGORIES.map((cat) => (
               <label key={cat.key} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-100 px-4 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
                 <span className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(cat.key)}
-                    onChange={() => toggleCategory(cat.key)}
-                    className="h-4 w-4 accent-red-500"
-                  />
+                  <input type="checkbox" checked={selected.has(cat.key)} onChange={() => toggleCategory(cat.key)} className="h-4 w-4 accent-red-500" />
                   <span className="text-sm">{cat.label}</span>
                 </span>
                 <span className="text-xs tabular-nums text-slate-400">{counts[cat.key] ?? 0} rows</span>
@@ -214,13 +144,8 @@ export default function SettingsPage() {
         {impliedWarnings.length > 0 && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
             Warning: Deleting{' '}
-            {impliedWarnings
-              .flatMap((w) => w.dependsOn ?? [])
-              .filter((dep) => selected.has(dep))
-              .map((dep) => CATEGORIES.find((c) => c.key === dep)?.label ?? dep)
-              .join(', ')}{' '}
-            will leave orphaned data in{' '}
-            {impliedWarnings.map((w) => w.label).join(', ')}.
+            {impliedWarnings.flatMap((w) => w.dependsOn ?? []).filter((dep) => selected.has(dep)).map((dep) => CATEGORIES.find((c) => c.key === dep)?.label ?? dep).join(', ')}{' '}
+            will leave orphaned data in {impliedWarnings.map((w) => w.label).join(', ')}.
           </p>
         )}
 
@@ -243,24 +168,13 @@ export default function SettingsPage() {
               {selected.size === 1 ? 'category' : 'categories'}. This cannot be undone.
             </p>
             <p className="text-sm text-red-600 dark:text-red-500">
-              Categories:{' '}
-              {selectedCategories
-                .map((k) => CATEGORIES.find((c) => c.key === k)?.label ?? k)
-                .join(', ')}
+              Categories: {selectedCategories.map((k) => CATEGORIES.find((c) => c.key === k)?.label ?? k).join(', ')}
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
-              >
+              <button onClick={handleDelete} disabled={deleting} className="rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
                 {deleting ? 'Deleting...' : 'Yes, delete permanently'}
               </button>
-              <button
-                onClick={() => setConfirming(false)}
-                disabled={deleting}
-                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900"
-              >
+              <button onClick={() => setConfirming(false)} disabled={deleting} className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900">
                 Cancel
               </button>
             </div>
