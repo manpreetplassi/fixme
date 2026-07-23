@@ -10,8 +10,8 @@ export class MoneyEntry {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  amount: number;
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  amount: number | null;
 
   @Column({ type: 'date' })
   log_date: string;

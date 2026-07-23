@@ -10,7 +10,7 @@ import { useAuth, useLogout } from '@/hooks/use-auth';
 const navItems = [
   { href: '/today', label: 'Today', icon: CalendarCheck },
   { href: '/dashboard', label: 'Dashboard', icon: House },
-  { href: '/tracker', label: 'Tracker', icon: SquareCheckBig },
+  { href: '/tracker', label: 'History', icon: SquareCheckBig },
   { href: '/money', label: 'Money', icon: IndianRupee },
   { href: '/lifestyle', label: 'Lifestyle', icon: HeartPulse },
   { href: '/reels', label: 'Reels Vault', icon: Film },

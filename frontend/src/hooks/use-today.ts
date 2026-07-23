@@ -44,7 +44,7 @@ export function useDeleteRoutineItem() {
 export function useSetRoutineDone() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { is_done: boolean; date?: string; note?: string } }) => setRoutineDone(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; rating?: number | null; linked_money_entry_id?: string | null } }) => setRoutineDone(id, payload),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['today'] }),
   });
 }

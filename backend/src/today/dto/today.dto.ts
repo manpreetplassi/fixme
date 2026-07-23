@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -11,6 +11,8 @@ export class CreateRoutineItemDto {
   @ApiPropertyOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule: string;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() reminder_enabled?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) display_order?: number;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points?: number;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }
 
 export class UpdateRoutineItemDto {
@@ -22,12 +24,19 @@ export class UpdateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsBoolean() reminder_enabled?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() is_active?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) display_order?: number;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points?: number;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }
 
 export class SetRoutineDoneDto {
-  @ApiPropertyOptional() @IsBoolean() is_done: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() is_done?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsIn(['not_started', 'done', 'completed', 'failed', 'skipped']) status?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() date?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() note?: string;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points_earned?: number;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) duration_minutes?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) rating?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }
 
 export class ScreenCheckInDto {

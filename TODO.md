@@ -81,6 +81,90 @@ Use this file as the task runner.
 - [ ] Confirm login works on deployed frontend.
 - [ ] Confirm tracker CRUD works on deployed frontend.
 
+## Phase 5 - Finish the already-started Today/Tracker unification
+
+- [x] Re-run the existing idempotent daily task/log and hobby backfill logic to catch drift before cutover.
+- [x] Update money-tracker DTOs and service to read/write existing unified MoneyEntry columns.
+- [x] Update today service/controller/DTOs to use routine completion status, points, and linked money fields.
+- [x] Cut frontend `/tracker` over to routine_items/routine_completions via today endpoints.
+- [x] Repurpose `/tracker` nav tab into a read-only History view for past routine completions.
+- [ ] Retire daily-tasks/daily-logs backend modules and remove them from app.module.ts after cutover verification.
+
+## Phase 6 - Fix known bugs and UI inconsistencies
+
+- [ ] Make Today row reminder bell a real `reminder_enabled` toggle.
+- [ ] Remove tap-target styling from the decorative Today time-block badge.
+- [ ] Normalize input/button padding across pages to match Today (`px-4 py-3`).
+- [ ] Remove raw admin/catalog fields from the everyday add-item form if still present after Phase 5.
+
+## Phase 7 - Wire budgeting and smart entry on top of the existing schema
+
+- [ ] Wire MoneyBudget into money-tracker service/controller as optional monthly category limits.
+- [ ] Support optional itemized sub-entries with `parent_entry_id`.
+- [ ] Use `is_recurring` and `recurrence_rule` for automatic bills/subscriptions.
+- [ ] Add history-based fuzzy autofill before optional Gemini categorization.
+- [ ] Wire meal-to-money sync through `needs_price` and `meal_entries.linked_money_entry_id`.
+- [ ] Build generic pending linked entry support using `source_type` and `source_id`.
+- [ ] Surface a persistent glanceable needs-price queue.
+
+## Phase 8 - Finish the Hobbies to Lifestyle Activities cutover
+
+- [ ] Re-run the idempotent hobby backfill to catch drift.
+- [ ] Cut frontend `/hobbies` over to lifestyle_activities filtered to `activity_type: 'hobby'`.
+- [ ] Surface Hobbies and Learning-log entries directly inside Today's list.
+- [ ] Retire hobbies module and remove it from app.module.ts after verification.
+
+## Phase 9 - Status, automation, and flexible/measurable targets
+
+- [ ] Use `routine_completions.status` as done / failed / skipped.
+- [ ] Add day-rollover background job for missing recurring completions.
+- [ ] Display missed past completions as failed when no row exists.
+- [ ] Add measurable item type with target, actual, and tolerance.
+- [ ] Score measurable items on a 0-10 scale.
+- [ ] Map simple item results onto the same scoring scale.
+- [ ] Add per-date planning overrides using existing `plan_id` columns.
+
+## Phase 10 - Reflections integration
+
+- [ ] Add optional reflection note prompts for completion outcomes.
+- [ ] Route completion notes into the day's Reflection entry without overwriting.
+- [ ] Remove `routine_completions.note` usage in favor of Reflection routing.
+- [ ] Extend reflection routing to unusually large Money entries.
+- [ ] Surface matching solutions_bank suggestions for `primary_blocker`.
+
+## Phase 11 - Selective data deletion
+
+- [ ] Build checklist-based delete-my-data tool with live row counts.
+- [ ] Exclude reels-vault from deletion categories.
+- [ ] Show dependency warnings for partial deletion selections.
+- [ ] Show final plain-language confirmation before destructive deletion.
+- [ ] Add editable Reset to zero preset.
+
+## Phase 12 - Streaks unification and Analytics correlations
+
+- [ ] Feed routine items, screen check-ins, and lifestyle activities into unified streaks.
+- [ ] Add Analytics views for measurable-score trends versus mood/energy.
+- [ ] Add Analytics views for failed-task frequency versus spend patterns.
+
+## Phase 13 - AI Plan Builder
+
+- [ ] Add Plan and PlanItem entities.
+- [ ] Add Gemini-backed plan chat interface for goal brainstorming.
+- [ ] Generate structured dated line-item JSON into an editable draft table.
+- [ ] Confirm draft before writing plan items.
+- [ ] Write confirmed items through existing routine_items/money_tracker `plan_id` columns.
+- [ ] Support reopening plan chat and updating linked items without duplication.
+- [ ] Provide manual plan entry when Gemini is not configured.
+
+## Phase 14 - Mobile-first UI pass
+
+- [ ] Use bottom sheets for quick-add/edit forms.
+- [ ] Keep primary actions within thumb reach.
+- [ ] Keep ~44px tap-target minimum consistent.
+- [ ] Avoid hover-dependent interactions and dense small-screen multi-column forms.
+- [ ] Add natural swipe gestures where useful.
+- [ ] Render history-autocomplete suggestions as tappable chips.
+
 ## Notes
 
 - The previous TODO content referenced `/outputs/` files such as `QUICK_START_GUIDE.md`, `FIXME_COMPLETE_PROJECT_SPECIFICATION.md`, and phase prompt files.

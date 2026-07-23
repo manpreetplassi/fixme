@@ -9,8 +9,9 @@ import { MoneyEntry } from './entities/money-entry.entity';
 export class MoneyTrackerService {
   constructor(@InjectRepository(MoneyEntry) private readonly repo: Repository<MoneyEntry>) {}
 
-  create(user: User, dto: CreateMoneyEntryDto) {
-    return this.repo.save(this.repo.create({ user, ...dto }));
+  async create(user: User, dto: CreateMoneyEntryDto) {
+    if (dto.parent_entry_id) await this.findOne(dto.parent_entry_id, user.id);
+    return this.repo.save(this.repo.create(this.withDefaults(user, dto)));
   }
 
   findAll(userId: string) {
@@ -25,7 +26,8 @@ export class MoneyTrackerService {
 
   async update(id: string, userId: string, dto: UpdateMoneyEntryDto) {
     const entry = await this.findOne(id, userId);
-    Object.assign(entry, dto);
+    if (dto.parent_entry_id) await this.findOne(dto.parent_entry_id, userId);
+    Object.assign(entry, this.cleanNullableFields(dto));
     return this.repo.save(entry);
   }
 
@@ -37,11 +39,15 @@ export class MoneyTrackerService {
 
   async summary(userId: string) {
     const entries = await this.repo.find({ where: { user: { id: userId } } });
-    const totalSaved = entries.reduce((sum, entry) => sum + Number(entry.amount), 0);
+    const totalSaved = this.sumByType(entries, ['saved', 'income']);
+    const totalSpent = this.sumByType(entries, ['spent', 'expense']);
+    const net = totalSaved - totalSpent;
     return {
-      thisWeek: totalSaved,
-      thisMonth: totalSaved,
-      thisYear: totalSaved,
+      thisWeek: net,
+      thisMonth: net,
+      thisYear: net,
+      totalSaved,
+      totalSpent,
       progressToReward: totalSaved,
       rewardThreshold: 1000,
     };
@@ -49,15 +55,41 @@ export class MoneyTrackerService {
 
   async stats(userId: string) {
     const entries = await this.repo.find({ where: { user: { id: userId } }, order: { log_date: 'DESC' } });
-    const totalSaved = entries.reduce((sum, entry) => sum + Number(entry.amount), 0);
-    const avgDailySavings = entries.length ? totalSaved / entries.length : 0;
+    const pricedEntries = entries.filter((entry) => entry.amount !== null && entry.amount !== undefined);
+    const totalSaved = this.sumByType(entries, ['saved', 'income']);
+    const totalSpent = this.sumByType(entries, ['spent', 'expense']);
+    const avgDailySavings = pricedEntries.length ? totalSaved / pricedEntries.length : 0;
     return {
       avgDailySavings,
       avgWeeklySavings: avgDailySavings * 7,
       bestDay: entries[0] ?? null,
       totalSaved,
+      totalSpent,
+      pendingPriceCount: entries.filter((entry) => entry.needs_price).length,
       rewardsUnlocked: Math.floor(totalSaved / 1000),
-      daysWithoutZomato: entries.length,
+      daysWithoutZomato: pricedEntries.length,
     };
+  }
+
+  private withDefaults(user: User, dto: CreateMoneyEntryDto) {
+    return {
+      ...this.cleanNullableFields(dto),
+      user,
+      amount: dto.amount ?? null,
+      type: dto.type ?? 'saved',
+      category: dto.category ?? 'Other',
+      is_recurring: dto.is_recurring ?? false,
+      needs_price: dto.needs_price ?? dto.amount == null,
+    };
+  }
+
+  private cleanNullableFields<T extends CreateMoneyEntryDto | UpdateMoneyEntryDto>(dto: T) {
+    return Object.fromEntries(Object.entries(dto).filter(([, value]) => value !== undefined)) as T;
+  }
+
+  private sumByType(entries: MoneyEntry[], types: string[]) {
+    return entries
+      .filter((entry) => types.includes(entry.type))
+      .reduce((sum, entry) => sum + Number(entry.amount ?? 0), 0);
   }
 }

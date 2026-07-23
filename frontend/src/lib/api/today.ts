@@ -11,6 +11,10 @@ export type TodayRoutineItem = {
   priority: 'urgent' | 'important' | 'low';
   repeat_rule: string;
   reminder_enabled: boolean;
+  status: 'not_started' | 'done' | 'completed' | 'failed' | 'skipped' | string;
+  points: number;
+  points_earned: number;
+  linked_money_entry_id: string | null;
   is_done: boolean;
   overdue: boolean;
   period?: 'morning' | 'night';
@@ -69,7 +73,7 @@ export async function deleteRoutineItem(id: string) {
   return response.data.data;
 }
 
-export async function setRoutineDone(id: string, payload: { is_done: boolean; date?: string; note?: string }) {
+export async function setRoutineDone(id: string, payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; rating?: number | null; linked_money_entry_id?: string | null }) {
   const response = await apiClient.post(`/today/items/${id}/done`, payload);
   return response.data.data;
 }

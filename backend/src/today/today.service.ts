@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, IsNull, Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { CreateRoutineItemDto, ScreenCheckInDto, SetRoutineDoneDto, UpdateRoutineItemDto } from './dto/today.dto';
 import { RoutineCompletion } from './entities/routine-completion.entity';
@@ -45,8 +45,12 @@ export class TodayService {
         ...item,
         id: item.key,
         type: 'screen_checkin',
-        is_done: Boolean(checkIn) || Boolean(completion?.is_done),
-        overdue: this.isOverdue(item.time_block, Boolean(checkIn) || Boolean(completion?.is_done), date),
+        status: completion?.status ?? (checkIn ? 'done' : 'not_started'),
+        points: 0,
+        points_earned: completion?.points_earned ?? 0,
+        linked_money_entry_id: completion?.linked_money_entry_id ?? null,
+        is_done: Boolean(checkIn) || Boolean(completion && this.isDoneStatus(completion.status)),
+        overdue: this.isOverdue(item.time_block, Boolean(checkIn) || Boolean(completion && this.isDoneStatus(completion.status)), date),
         check_in: checkIn ?? null,
       };
     });
@@ -64,7 +68,7 @@ export class TodayService {
   }
 
   async createItem(user: User, dto: CreateRoutineItemDto) {
-    const item = this.routineRepo.create({ ...dto, user, time_block: dto.time_block ?? null, reminder_enabled: dto.reminder_enabled ?? false });
+    const item = this.routineRepo.create({ ...dto, user, time_block: dto.time_block ?? null, reminder_enabled: dto.reminder_enabled ?? false, points: dto.points ?? 0, linked_money_entry_id: dto.linked_money_entry_id ?? null });
     return this.routineRepo.save(item);
   }
 
@@ -89,9 +93,16 @@ export class TodayService {
     if (!completion) {
       completion = this.completionRepo.create({ user, routine_item: item, system_key: null, completion_date: date });
     }
-    completion.is_done = dto.is_done;
-    completion.completed_at = dto.is_done ? new Date() : null;
+    const status = dto.status ?? (dto.is_done ? 'done' : 'not_started');
+    const isDone = this.isDoneStatus(status);
+    completion.status = status;
+    completion.is_done = isDone;
+    completion.completed_at = isDone ? new Date() : null;
     completion.note = dto.note ?? null;
+    completion.points_earned = dto.points_earned ?? (isDone ? item.points : 0);
+    completion.duration_minutes = dto.duration_minutes ?? null;
+    completion.rating = dto.rating ?? null;
+    completion.linked_money_entry_id = dto.linked_money_entry_id ?? item.linked_money_entry_id ?? null;
     return this.completionRepo.save(completion);
   }
 
@@ -170,12 +181,15 @@ export class TodayService {
       completion = this.completionRepo.create({ user, routine_item: null, system_key: systemKey, completion_date: date });
     }
     completion.is_done = true;
+    completion.status = 'done';
+    completion.points_earned = 0;
     completion.completed_at = new Date();
     await this.completionRepo.save(completion);
   }
 
   private toRoutineResponse(item: RoutineItem, completion: RoutineCompletion | null, date: string) {
-    const isDone = Boolean(completion?.is_done);
+    const status = completion?.status ?? 'not_started';
+    const isDone = completion ? this.isDoneStatus(status) : false;
     return {
       id: item.id,
       type: 'routine',
@@ -185,6 +199,10 @@ export class TodayService {
       priority: item.priority,
       repeat_rule: item.repeat_rule,
       reminder_enabled: item.reminder_enabled,
+      status,
+      points: item.points,
+      points_earned: completion?.points_earned ?? 0,
+      linked_money_entry_id: completion?.linked_money_entry_id ?? item.linked_money_entry_id,
       is_done: isDone,
       overdue: this.isOverdue(item.time_block, isDone, date),
     };
@@ -243,5 +261,9 @@ export class TodayService {
       count += 1;
     }
     return count;
+  }
+
+  private isDoneStatus(status: string) {
+    return status === 'done' || status === 'completed';
   }
 }
