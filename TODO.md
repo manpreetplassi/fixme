@@ -134,10 +134,10 @@ Use this file as the task runner.
 
 ## Phase 11 - Selective data deletion
 
-- [ ] Build checklist-based delete-my-data tool with live row counts.
-- [ ] Exclude reels-vault from deletion categories.
-- [ ] Show dependency warnings for partial deletion selections.
-- [ ] Show final plain-language confirmation before destructive deletion.
+- [x] Build checklist-based delete-my-data tool with live row counts.
+- [x] Exclude reels-vault from deletion categories.
+- [x] Show dependency warnings for partial deletion selections.
+- [x] Show final plain-language confirmation before destructive deletion.
 - [ ] Add editable Reset to zero preset.
 
 ## Phase 12 - Streaks unification and Analytics correlations

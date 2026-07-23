@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsEmail, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsBoolean, IsEmail, IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class UpdateUserProfileDto {
   @ApiPropertyOptional()
@@ -62,4 +62,25 @@ export class UpdateUserGoalsDto {
   @IsInt()
   @Min(0)
   weekly_reward_threshold?: number;
+}
+
+export const DELETABLE_CATEGORIES = [
+  'routine_completions',
+  'routine_items',
+  'money_tracker',
+  'learning_logs',
+  'reflections',
+  'lifestyle_activities',
+  'meal_entries',
+  'hobby_logs',
+  'streaks',
+] as const;
+
+export type DeletableCategory = (typeof DELETABLE_CATEGORIES)[number];
+
+export class DeleteUserDataDto {
+  @ApiProperty({ type: [String], enum: DELETABLE_CATEGORIES })
+  @IsArray()
+  @IsIn(DELETABLE_CATEGORIES, { each: true })
+  categories: DeletableCategory[];
 }

@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Put, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { UpdateUserGoalsDto, UpdateUserProfileDto } from './dto/update-user.dto';
+import { DeleteUserDataDto, UpdateUserGoalsDto, UpdateUserProfileDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -28,5 +28,17 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user goals' })
   updateGoals(@CurrentUser() user: User, @Body() dto: UpdateUserGoalsDto) {
     return this.usersService.updateGoals(user.id, dto);
+  }
+
+  @Get('data/counts')
+  @ApiOperation({ summary: 'Get row counts per deletable category' })
+  getDataCounts(@CurrentUser() user: User) {
+    return this.usersService.getDataCounts(user.id);
+  }
+
+  @Delete('data')
+  @ApiOperation({ summary: 'Delete selected data categories for the current user' })
+  deleteData(@CurrentUser() user: User, @Body() dto: DeleteUserDataDto) {
+    return this.usersService.deleteData(user.id, dto);
   }
 }
