@@ -26,7 +26,7 @@ interface TimePickerProps {
   placeholder?: string;
 }
 
-export function TimePicker({ label, value, onChange, placeholder = 'Set time' }: TimePickerProps) {
+export function TimePicker({ label, value, onChange }: TimePickerProps) {
   const parsed = from24(value);
 
   function update(field: 'hour' | 'minute' | 'ampm', next: string) {

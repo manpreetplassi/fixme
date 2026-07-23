@@ -41,19 +41,18 @@ export default function DashboardPage() {
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-xl font-black">Screen check-ins</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Last 7 days, morning and night.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Last 7 days.</p>
             </div>
             <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-              {screen.data.streaks.morning} clean mornings / {screen.data.streaks.night} clean nights
+              {screen.data.streak} clean day{screen.data.streak !== 1 ? 's' : ''} streak
             </p>
           </div>
           <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {screen.data.week.map((day) => (
               <div key={day.date} className="rounded-2xl border border-slate-200 bg-slate-50 p-2 text-center dark:border-slate-800 dark:bg-slate-900/70 sm:p-3">
                 <p className="mb-2 text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400">{day.date.slice(5)}</p>
-                <div className="flex justify-center gap-2">
-                  <StatusDot label="Morning" watched={day.morning?.watched} done={Boolean(day.morning)} />
-                  <StatusDot label="Night" watched={day.night?.watched} done={Boolean(day.night)} />
+                <div className="flex justify-center">
+                  <StatusDot watched={day.check_in?.watched} done={Boolean(day.check_in)} />
                 </div>
               </div>
             ))}
@@ -111,10 +110,10 @@ function MetricCard({ label, value, accent, progress }: { label: string; value: 
   );
 }
 
-function StatusDot({ label, watched, done }: { label: string; watched?: boolean; done: boolean }) {
+function StatusDot({ watched, done }: { watched?: boolean; done: boolean }) {
   return (
     <span
-      title={`${label}: ${done ? (watched ? 'watched' : 'clean') : 'not checked'}`}
+      title={done ? (watched ? 'watched' : 'clean') : 'not checked'}
       className={clsx(
         'inline-flex h-5 w-5 rounded-full ring-2 ring-white dark:ring-slate-950',
         !done && 'bg-slate-300 dark:bg-slate-700',
