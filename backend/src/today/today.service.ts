@@ -10,8 +10,7 @@ import { TodayRemindersService } from './today-reminders.service';
 
 const priorityRank: Record<string, number> = { urgent: 0, important: 1, low: 2 };
 const systemItems = [
-  { key: 'screen_morning', title: 'Morning screen check-in', category: 'screen', time_block: '07:00', priority: 'urgent', repeat_rule: 'daily', reminder_enabled: true, period: 'morning' },
-  { key: 'screen_night', title: 'Night screen check-in', category: 'screen', time_block: '22:30', priority: 'urgent', repeat_rule: 'daily', reminder_enabled: true, period: 'night' },
+  { key: 'screen_daily', title: 'Screen check-in', category: 'screen', time_block: '22:00', priority: 'important', repeat_rule: 'daily', reminder_enabled: false, period: null },
 ];
 
 @Injectable()
@@ -39,7 +38,7 @@ export class TodayService {
       });
 
     const checks = systemItems.map((item) => {
-      const checkIn = checkIns.find((entry) => entry.period === item.period);
+      const checkIn = checkIns.find((entry) => entry.check_date === date);
       const completion = completions.find((entry) => entry.system_key === item.key);
       return {
         ...item,
@@ -60,7 +59,6 @@ export class TodayService {
 
     return {
       date,
-      activePeriod: this.getActivePeriod(),
       items: allItems,
       overdue,
       screen: await this.getScreenSummary(user.id, date),
@@ -108,7 +106,7 @@ export class TodayService {
 
   async checkIn(user: User, dto: ScreenCheckInDto) {
     const date = dto.date ?? this.todayString();
-    const period = dto.period ?? this.getActivePeriod() ?? 'morning';
+    const period = dto.period ?? 'daily';
     let checkIn = await this.screenRepo.findOne({ where: { user: { id: user.id }, check_date: date, period } });
     if (!checkIn) {
       checkIn = this.screenRepo.create({ user, check_date: date, period });
@@ -117,11 +115,17 @@ export class TodayService {
     checkIn.watched = dto.watched;
     checkIn.content_type = dto.watched ? dto.content_type ?? 'other' : null;
     checkIn.title_note = dto.watched ? dto.title_note ?? null : null;
-    checkIn.stopped_watching_at = period === 'night' && dto.watched ? dto.stopped_watching_at ?? null : null;
+    checkIn.stopped_watching_at = dto.watched ? dto.stopped_watching_at ?? null : null;
     const saved = await this.screenRepo.save(checkIn);
 
-    await this.markSystemDone(user, `screen_${period}`, date);
+    await this.markSystemDone(user, 'screen_daily', date);
     return saved;
+  }
+
+  async deleteCheckIn(user: User, date = this.todayString()) {
+    await this.screenRepo.delete({ user: { id: user.id }, check_date: date });
+    await this.completionRepo.delete({ user: { id: user.id }, system_key: 'screen_daily', completion_date: date });
+    return { deleted: true };
   }
 
   async getScreenSummary(userId: string, date = this.todayString()) {
@@ -133,16 +137,12 @@ export class TodayService {
 
     const week = days.map((day) => ({
       date: day,
-      morning: checkIns.find((entry) => entry.check_date === day && entry.period === 'morning') ?? null,
-      night: checkIns.find((entry) => entry.check_date === day && entry.period === 'night') ?? null,
+      check_in: checkIns.find((entry) => entry.check_date === day) ?? null,
     }));
 
     return {
       week,
-      streaks: {
-        morning: this.cleanStreak(week, 'morning'),
-        night: this.cleanStreak(week, 'night'),
-      },
+      streak: this.cleanStreak(week),
     };
   }
 
@@ -233,14 +233,7 @@ export class TodayService {
     return (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9);
   }
 
-  private getActivePeriod() {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'morning';
-    if (hour >= 18) return 'night';
-    return null;
-  }
-
-  private todayString() {
+private todayString() {
     return new Date().toISOString().slice(0, 10);
   }
 
@@ -253,11 +246,10 @@ export class TodayService {
     });
   }
 
-  private cleanStreak(week: Array<{ morning: ScreenCheckIn | null; night: ScreenCheckIn | null }>, period: 'morning' | 'night') {
+  private cleanStreak(week: Array<{ check_in: ScreenCheckIn | null }>) {
     let count = 0;
     for (const day of [...week].reverse()) {
-      const entry = day[period];
-      if (!entry || entry.watched) break;
+      if (!day.check_in || day.check_in.watched) break;
       count += 1;
     }
     return count;

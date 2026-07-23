@@ -43,9 +43,15 @@ export class TodayController {
   }
 
   @Post('screen-checkins')
-  @ApiOperation({ summary: 'Create or update morning/night screen check-in' })
+  @ApiOperation({ summary: 'Create or update daily screen check-in' })
   checkIn(@CurrentUser() user: User, @Body() dto: ScreenCheckInDto) {
     return this.service.checkIn(user, dto);
+  }
+
+  @Delete('screen-checkins')
+  @ApiOperation({ summary: 'Delete today screen check-in (reset)' })
+  deleteCheckIn(@CurrentUser() user: User, @Query('date') date?: string) {
+    return this.service.deleteCheckIn(user, date);
   }
 
   @Get('screen-checkins/summary')

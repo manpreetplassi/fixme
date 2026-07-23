@@ -5,6 +5,7 @@ import { RemoveLifestyleWaterTracking1720300000000 } from './1720300000000-Remov
 import { UnifyRoutineMoneyAndHobbies1720400000000 } from './1720400000000-UnifyRoutineMoneyAndHobbies';
 import { BackfillUnifiedRoutineMoneyAndHobbiesDrift1720500000000 } from './1720500000000-BackfillUnifiedRoutineMoneyAndHobbiesDrift';
 import { AddAddictionLabel1720600000000 } from './1720600000000-AddAddictionLabel';
+import { MergeScreenCheckIns1720700000000 } from './1720700000000-MergeScreenCheckIns';
 
 export const migrations = [
   InitialSchema1719600000000,
@@ -14,4 +15,5 @@ export const migrations = [
   UnifyRoutineMoneyAndHobbies1720400000000,
   BackfillUnifiedRoutineMoneyAndHobbiesDrift1720500000000,
   AddAddictionLabel1720600000000,
+  MergeScreenCheckIns1720700000000,
 ];

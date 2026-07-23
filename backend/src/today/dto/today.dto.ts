@@ -41,7 +41,7 @@ export class SetRoutineDoneDto {
 
 export class ScreenCheckInDto {
   @ApiPropertyOptional() @IsBoolean() watched: boolean;
-  @ApiPropertyOptional() @IsOptional() @IsIn(['morning', 'night']) period?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() period?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() date?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['reel_short', 'youtube', 'movie', 'show', 'other']) content_type?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() title_note?: string;

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { deleteMyData, getDataCounts, getProfile, updateGoals, updateProfile } from '@/lib/api/users';
+import { TimePicker } from '@/components/ui/time-picker';
 
 const CATEGORIES: { key: string; label: string; dependsOn?: string[] }[] = [
   { key: 'routine_completions', label: 'Routine completion history' },
@@ -149,8 +150,6 @@ export default function SettingsPage() {
           ['name', 'Name'],
           ['email', 'Email'],
           ['bio', 'Bio'],
-          ['wake_target', 'Wake Target'],
-          ['sleep_target', 'Sleep Target'],
           ['exercise_minutes_target', 'Exercise Minutes'],
           ['daily_zomato_avoidance_savings', 'Daily Savings Target'],
           ['weekly_reward_threshold', 'Reward Threshold'],
@@ -167,6 +166,16 @@ export default function SettingsPage() {
             />
           </label>
         ))}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-medium">
+            Wake Target
+            <TimePicker value={form.wake_target} onChange={(v) => setForm((c) => ({ ...c, wake_target: v }))} />
+          </label>
+          <label className="block text-sm font-medium">
+            Sleep Target
+            <TimePicker value={form.sleep_target} onChange={(v) => setForm((c) => ({ ...c, sleep_target: v }))} />
+          </label>
+        </div>
         <button disabled={isLoading || isSaving} className="rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300">
           {isSaving ? 'Saving...' : 'Save settings'}
         </button>

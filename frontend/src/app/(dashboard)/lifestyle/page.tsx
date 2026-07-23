@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { Activity, Dumbbell, Plus, Search, Trash2, Utensils } from 'lucide-react';
+import { TimePicker } from '@/components/ui/time-picker';
 import { PageHeader } from '@/components/layout/page-header';
 import { MealEntry, LifestyleActivity, MealTemplate, LifestyleDay } from '@/lib/api/lifestyle';
 import { useCreateLifestyleActivity, useCreateMeal, useCreateMealTemplate, useDeleteLifestyleActivity, useDeleteMeal, useLifestyleAnalytics, useLifestyleSearch, useLifestyleToday, useMealTemplates, useUpdateLifestyleDay, useUseMealTemplate } from '@/hooks/use-lifestyle';
@@ -241,6 +242,9 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string | number; onChange: (value: string) => void; type?: string; placeholder?: string }) {
+  if (type === 'time') {
+    return <TimePicker label={label} value={String(value)} onChange={onChange} />;
+  }
   return (
     <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
       {label}

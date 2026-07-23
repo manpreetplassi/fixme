@@ -17,14 +17,14 @@ export type TodayRoutineItem = {
   linked_money_entry_id: string | null;
   is_done: boolean;
   overdue: boolean;
-  period?: 'morning' | 'night';
+  period?: string;
   check_in?: ScreenCheckIn | null;
 };
 
 export type ScreenCheckIn = {
   id: string;
   check_date: string;
-  period: 'morning' | 'night';
+  period: string;
   watched: boolean;
   content_type: string | null;
   title_note: string | null;
@@ -33,21 +33,16 @@ export type ScreenCheckIn = {
 
 export type ScreenSummaryDay = {
   date: string;
-  morning: ScreenCheckIn | null;
-  night: ScreenCheckIn | null;
+  check_in: ScreenCheckIn | null;
 };
 
 export type ScreenSummary = {
   week: ScreenSummaryDay[];
-  streaks: {
-    morning: number;
-    night: number;
-  };
+  streak: number;
 };
 
 export type TodayResponse = {
   date: string;
-  activePeriod: 'morning' | 'night' | null;
   items: TodayRoutineItem[];
   overdue: TodayRoutineItem[];
   screen: ScreenSummary;
@@ -80,6 +75,11 @@ export async function setRoutineDone(id: string, payload: { is_done?: boolean; s
 
 export async function saveScreenCheckIn(payload: Record<string, unknown>) {
   const response = await apiClient.post('/today/screen-checkins', payload);
+  return response.data.data;
+}
+
+export async function deleteScreenCheckIn(date?: string) {
+  const response = await apiClient.delete('/today/screen-checkins', { params: date ? { date } : undefined });
   return response.data.data;
 }
 

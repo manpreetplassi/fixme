@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRoutineItem, deleteRoutineItem, getScreenSummary, getToday, saveScreenCheckIn, sendReminderDigest, setRoutineDone, updateRoutineItem } from '@/lib/api/today';
+import { createRoutineItem, deleteRoutineItem, deleteScreenCheckIn, getScreenSummary, getToday, saveScreenCheckIn, sendReminderDigest, setRoutineDone, updateRoutineItem } from '@/lib/api/today';
 
 export function useToday(date?: string) {
   return useQuery({
@@ -53,6 +53,17 @@ export function useSaveScreenCheckIn() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: saveScreenCheckIn,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['today'] });
+      void queryClient.invalidateQueries({ queryKey: ['screen-summary'] });
+    },
+  });
+}
+
+export function useDeleteScreenCheckIn() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (date?: string) => deleteScreenCheckIn(date),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['today'] });
       void queryClient.invalidateQueries({ queryKey: ['screen-summary'] });

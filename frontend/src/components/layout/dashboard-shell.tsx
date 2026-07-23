@@ -73,7 +73,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#ecfeff_45%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_25%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#020617_100%)]">
-      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/85 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-slate-950/85 lg:hidden">
+      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/90 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-slate-950/90 lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600">FixMe</p>
@@ -120,7 +120,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       <nav
         className={clsx(
-          'fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/92 pb-[env(safe-area-inset-bottom)] shadow-[0_-14px_44px_rgba(15,23,42,0.16)] backdrop-blur transition-transform duration-300 ease-out dark:border-white/10 dark:bg-slate-950/92 lg:hidden',
+          'fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-14px_44px_rgba(15,23,42,0.16)] backdrop-blur transition-transform duration-300 ease-out dark:border-white/10 dark:bg-slate-950/90 lg:hidden',
           mobileNavVisible ? 'translate-y-0' : 'translate-y-[calc(100%+1rem)]',
         )}
       >
