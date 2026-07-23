@@ -114,7 +114,8 @@ export default function SettingsPage() {
     setDeleting(true);
     setDeleteMessage(null);
     try {
-      const result = await deleteMyData([...selected]);
+      const selectedCategories = Array.from(selected);
+      const result = await deleteMyData(selectedCategories);
       const total = Object.values(result.deleted).reduce((a, b) => a + b, 0);
       setDeleteMessage(`Deleted ${total} records across ${Object.keys(result.deleted).length} categories.`);
       setSelected(new Set());
@@ -130,7 +131,8 @@ export default function SettingsPage() {
     }
   }
 
-  const totalSelected = [...selected].reduce((sum, key) => sum + (counts[key] ?? 0), 0);
+  const selectedCategories = Array.from(selected);
+  const totalSelected = selectedCategories.reduce((sum, key) => sum + (counts[key] ?? 0), 0);
 
   return (
     <div className="grid gap-6">
@@ -198,7 +200,7 @@ export default function SettingsPage() {
 
         {impliedWarnings.length > 0 && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
-            ⚠ Deleting{' '}
+            Warning: Deleting{' '}
             {impliedWarnings
               .flatMap((w) => w.dependsOn ?? [])
               .filter((dep) => selected.has(dep))
@@ -229,7 +231,7 @@ export default function SettingsPage() {
             </p>
             <p className="text-sm text-red-600 dark:text-red-500">
               Categories:{' '}
-              {[...selected]
+              {selectedCategories
                 .map((k) => CATEGORIES.find((c) => c.key === k)?.label ?? k)
                 .join(', ')}
             </p>
