@@ -30,6 +30,7 @@ export default function SettingsPage() {
     daily_zomato_avoidance_savings: '',
     weekly_reward_threshold: '',
     preferred_hobbies: '',
+    addiction_label: '',
   });
 
   // delete-data state
@@ -53,6 +54,7 @@ export default function SettingsPage() {
           daily_zomato_avoidance_savings: String(profile.daily_zomato_avoidance_savings ?? ''),
           weekly_reward_threshold: String(profile.weekly_reward_threshold ?? ''),
           preferred_hobbies: (profile.preferred_hobbies ?? []).join(', '),
+          addiction_label: profile.addiction_label ?? 'addiction',
         });
       })
       .catch(() => setMessage('Could not load profile settings.'))
@@ -77,6 +79,7 @@ export default function SettingsPage() {
           .split(',')
           .map((h) => h.trim())
           .filter(Boolean),
+        addiction_label: form.addiction_label.trim() || 'addiction',
       });
       await updateGoals({
         wake_target: form.wake_target,
@@ -152,6 +155,7 @@ export default function SettingsPage() {
           ['daily_zomato_avoidance_savings', 'Daily Savings Target'],
           ['weekly_reward_threshold', 'Reward Threshold'],
           ['preferred_hobbies', 'Preferred Hobbies'],
+          ['addiction_label', 'Addiction Label (private, only visible to you)'],
         ].map(([key, label]) => (
           <label key={key} className="block text-sm font-medium">
             {label}

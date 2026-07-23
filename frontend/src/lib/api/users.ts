@@ -12,6 +12,11 @@ export async function updateProfile(payload: Record<string, unknown>) {
   return response.data.data;
 }
 
+export async function getAddictionLabel(): Promise<string> {
+  const profile = await getProfile();
+  return (profile.addiction_label as string | undefined) ?? 'addiction';
+}
+
 export async function updateGoals(payload: Record<string, unknown>) {
   const response = await apiClient.put('/users/goals', payload);
   return response.data.data;

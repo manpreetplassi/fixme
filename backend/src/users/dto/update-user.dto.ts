@@ -33,6 +33,12 @@ export class UpdateUserProfileDto {
   @IsOptional()
   @IsArray()
   preferred_hobbies?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  addiction_label?: string;
 }
 
 export class UpdateUserGoalsDto {

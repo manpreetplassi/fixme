@@ -1,9 +1,10 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { useCreateReflection, useDeleteReflection, useReflectionWeek, useUpdateReflection } from '@/hooks/use-reflections';
+import { getAddictionLabel } from '@/lib/api/users';
 
 type Reflection = {
   id: string;
@@ -79,6 +80,11 @@ export default function ReflectionsPage() {
   const deleteReflection = useDeleteReflection();
   const [form, setForm] = useState<ReflectionForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [addictionLabel, setAddictionLabel] = useState('addiction');
+
+  useEffect(() => {
+    void getAddictionLabel().then(setAddictionLabel);
+  }, []);
 
   const items: Reflection[] = reflections.data ?? [];
   const isSaving = createReflection.isPending || updateReflection.isPending || deleteReflection.isPending;
@@ -148,7 +154,7 @@ export default function ReflectionsPage() {
 
         <label className="flex items-center gap-3 text-sm font-medium">
           <input type="checkbox" checked={form.masturbation_happened} onChange={(event) => setForm((current) => ({ ...current, masturbation_happened: event.target.checked }))} />
-          Masturbation happened
+          {addictionLabel.charAt(0).toUpperCase() + addictionLabel.slice(1)} happened
         </label>
 
         {form.masturbation_happened ? (

@@ -41,6 +41,9 @@ export class User {
   @Column({ type: 'jsonb', default: () => "'[]'" })
   preferred_hobbies: string[];
 
+  @Column({ default: 'addiction' })
+  addiction_label: string;
+
   @CreateDateColumn()
   created_at: Date;
 
