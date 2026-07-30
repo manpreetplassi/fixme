@@ -4,12 +4,15 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class GeminiService {
+  private static readonly defaultModel = 'gemini-2.5-flash';
   private readonly logger = new Logger(GeminiService.name);
   private readonly client: GoogleGenerativeAI | null;
+  private readonly modelName: string;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.client = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+    this.modelName = this.configService.get<string>('GEMINI_MODEL')?.trim() || GeminiService.defaultModel;
   }
 
   async analyzeReel(reelUrl: string, title: string, description: string) {
@@ -22,7 +25,7 @@ export class GeminiService {
       };
     }
 
-    const model = this.client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = this.client.getGenerativeModel({ model: this.modelName });
     const prompt = `Analyze this health/wellness Instagram reel.
 Title: ${title}
 Description: ${description}

@@ -162,6 +162,11 @@ Use this file as the task runner.
 - [x] Improve date/time picker presentation without adding a new dependency.
 - [x] Add polished animated states for optional sections.
 
+## Phase 20 - Urgent: fix dead Gemini model
+
+- [x] Move GeminiService model name off the hardcoded `gemini-1.5-flash` literal into an env var (`GEMINI_MODEL`).
+- [x] Set a sensible current default and document the env var in deployment docs.
+
 ## Phase 10 - Reflections integration
 
 - [ ] Add optional reflection note prompts for completion outcomes.

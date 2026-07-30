@@ -103,6 +103,7 @@ Configure these in the backend Vercel project:
 | `JWT_SECRET` | `replace_with_long_random_secret` | Yes | Use a strong random value. Never commit it. |
 | `JWT_EXPIRES_IN` | `7d` | Yes | Token expiry. |
 | `GEMINI_API_KEY` | empty or real key | No | Leave empty to use fallback behavior. |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | No | Gemini model used when `GEMINI_API_KEY` is configured. Defaults to `gemini-2.5-flash`; override when migrating models. |
 | `FRONTEND_URL` | `https://your-project.vercel.app` | Yes | Single frontend URL fallback. |
 | `FRONTEND_URLS` | `https://your-project.vercel.app,https://your-domain.com` | Recommended | Comma-separated allowed frontend origins for CORS. |
 | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | empty or SMTP values | No | Optional Today reminder digest. If missing, reminders skip silently. |
