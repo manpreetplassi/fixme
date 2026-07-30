@@ -1,9 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import { Bell, BellOff, Check, Clock, Pause, Play, Plus, Save, TimerReset, Trash2, Video, X, Monitor, MonitorOff } from 'lucide-react';
+import { AlarmClock, Bell, BellOff, CalendarDays, Check, ChevronDown, Clock, Gauge, Monitor, MonitorOff, Pause, Play, Plus, Repeat, Save, Tags, Target, TimerReset, Trash2, Video, X } from 'lucide-react';
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { TodayRoutineItem } from '@/lib/api/today';
 import { useCreateRoutineItem, useDeleteRoutineItem, useDeleteScreenCheckIn, useSaveScreenCheckIn, useSetRoutineDone, useStartRoutineTimer, useStopRoutineTimer, useToday, useUpdateRoutineItem } from '@/hooks/use-today';
@@ -32,11 +32,12 @@ type RoutineForm = {
   parent_tag: string;
   sub_tag: string;
   time_block: string;
-  priority: 'urgent' | 'important' | 'low';
-  repeat_rule: 'daily' | 'weekdays' | 'weekly' | 'once';
+  scheduled_date: string;
+  priority: '' | 'urgent' | 'important' | 'low';
+  repeat_rule: '' | 'daily' | 'weekdays' | 'weekly' | 'once';
   reminder_enabled: boolean;
   time_tracking_enabled: boolean;
-  item_type: 'simple' | 'measurable';
+  item_type: '' | 'simple' | 'measurable';
   target_value: string;
   target_unit: string;
   tolerance_value: string;
@@ -44,18 +45,32 @@ type RoutineForm = {
 
 const initialForm: RoutineForm = {
   title: '',
-  parent_tag: 'Health',
+  parent_tag: '',
   sub_tag: '',
   time_block: '',
-  priority: 'important',
-  repeat_rule: 'daily',
+  scheduled_date: '',
+  priority: '',
+  repeat_rule: '',
   reminder_enabled: false,
   time_tracking_enabled: false,
-  item_type: 'simple',
+  item_type: '',
   target_value: '',
   target_unit: '',
   tolerance_value: '',
 };
+
+const priorityOptions = [
+  { value: 'urgent', label: 'Urgent', helper: 'Needs attention today.' },
+  { value: 'important', label: 'Important', helper: 'Worth protecting time for.' },
+  { value: 'low', label: 'Low', helper: 'Nice to complete, flexible.' },
+] as const;
+
+const repeatOptions = [
+  { value: 'daily', label: 'Daily', helper: 'Shows every day.' },
+  { value: 'weekdays', label: 'Weekdays', helper: 'Monday to Friday only.' },
+  { value: 'weekly', label: 'Weekly', helper: 'Shows on the weekday of the date you choose.' },
+  { value: 'once', label: 'Once', helper: 'Shows only on the date you choose.' },
+] as const;
 
 export default function TodayPage() {
   const today = useToday();
@@ -87,16 +102,32 @@ export default function TodayPage() {
   const routineItems = useMemo(() => today.data?.items.filter((item) => item.type === 'routine') ?? [], [today.data]);
   const tagOptions = useMemo(() => Array.from(new Set(routineItems.map((item) => item.parent_tag ?? item.category).filter(Boolean))), [routineItems]);
   const filteredRoutineItems = routineItems.filter((item) => tagFilter === 'all' || (item.parent_tag ?? item.category) === tagFilter);
+  const needsScheduleDate = form.repeat_rule === 'once' || form.repeat_rule === 'weekly';
+  const canCreateRoutine =
+    Boolean(form.title.trim()) &&
+    Boolean(form.parent_tag.trim()) &&
+    Boolean(form.priority) &&
+    Boolean(form.repeat_rule) &&
+    Boolean(form.item_type) &&
+    (!needsScheduleDate || Boolean(form.scheduled_date)) &&
+    (form.item_type !== 'measurable' || (Boolean(form.target_value) && Boolean(form.target_unit.trim())));
 
   async function submitRoutine(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!canCreateRoutine || !form.priority || !form.repeat_rule || !form.item_type) return;
     const parentTag = form.parent_tag.trim();
     await createItem.mutateAsync({
-      ...form,
+      title: form.title.trim(),
       category: parentTag,
       parent_tag: parentTag,
       sub_tag: form.sub_tag.trim() || null,
       time_block: form.time_block || null,
+      scheduled_date: needsScheduleDate ? form.scheduled_date : null,
+      priority: form.priority,
+      repeat_rule: form.repeat_rule,
+      reminder_enabled: form.reminder_enabled,
+      time_tracking_enabled: form.time_tracking_enabled,
+      item_type: form.item_type,
       target_value: form.target_value ? Number(form.target_value) : null,
       target_unit: form.target_unit.trim() || null,
       tolerance_value: form.tolerance_value ? Number(form.tolerance_value) : null,
@@ -182,14 +213,14 @@ export default function TodayPage() {
                   {screenItem.is_done && screenItem.check_in ? (
                     <div className="mt-2">
                       <p className="font-semibold">
-                        {screenItem.check_in.watched ? '📺 Watched something' : '✅ Nothing watched'}
-                        <span className="ml-2 text-sm font-normal text-slate-500">· {screenItem.check_in.period}</span>
+                        {screenItem.check_in.watched ? 'Watched something' : 'Nothing watched'}
+                        <span className="ml-2 text-sm font-normal text-slate-500">/ {screenItem.check_in.period}</span>
                       </p>
                       {screenItem.check_in.watched ? (
                         <p className="mt-1 text-sm text-slate-500">
                           {screenItem.check_in.content_type?.replace('_', ' ')}
-                          {screenItem.check_in.title_note ? ` · ${screenItem.check_in.title_note}` : ''}
-                          {screenItem.check_in.stopped_watching_at ? ` · stopped at ${screenItem.check_in.stopped_watching_at}` : ''}
+                          {screenItem.check_in.title_note ? ` / ${screenItem.check_in.title_note}` : ''}
+                          {screenItem.check_in.stopped_watching_at ? ` / stopped at ${screenItem.check_in.stopped_watching_at}` : ''}
                         </p>
                       ) : null}
                     </div>
@@ -297,49 +328,209 @@ export default function TodayPage() {
             </div>
           </section>
 
-          <form onSubmit={submitRoutine} className="app-card grid gap-3 p-4 sm:p-5 md:grid-cols-6">
-            <input value={form.title} onChange={(e) => setForm((c) => ({ ...c, title: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800 md:col-span-2" placeholder="Routine item" required />
-            <input value={form.parent_tag} onChange={(e) => setForm((c) => ({ ...c, parent_tag: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Parent tag" required />
-            <input value={form.sub_tag} onChange={(e) => setForm((c) => ({ ...c, sub_tag: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Sub-tag optional" />
-            <TimePicker value={form.time_block} onChange={(v) => setForm((c) => ({ ...c, time_block: v }))} />
-            <select value={form.priority} onChange={(e) => setForm((c) => ({ ...c, priority: e.target.value as RoutineForm['priority'] }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
-              <option value="urgent">Urgent</option>
-              <option value="important">Important</option>
-              <option value="low">Low</option>
-            </select>
-            <select value={form.repeat_rule} onChange={(e) => setForm((c) => ({ ...c, repeat_rule: e.target.value as RoutineForm['repeat_rule'] }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
-              <option value="daily">Daily</option>
-              <option value="weekdays">Weekdays</option>
-              <option value="weekly">Weekly</option>
-              <option value="once">Once</option>
-            </select>
-            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm dark:border-slate-800">
-              <input type="checkbox" checked={form.reminder_enabled} onChange={(e) => setForm((c) => ({ ...c, reminder_enabled: e.target.checked }))} />
-              Reminder
-            </label>
-            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm dark:border-slate-800">
-              <input type="checkbox" checked={form.time_tracking_enabled} onChange={(e) => setForm((c) => ({ ...c, time_tracking_enabled: e.target.checked }))} />
-              Track time
-            </label>
-            <select value={form.item_type} onChange={(e) => setForm((c) => ({ ...c, item_type: e.target.value as RoutineForm['item_type'] }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
-              <option value="simple">Simple</option>
-              <option value="measurable">Measurable</option>
-            </select>
-            {form.item_type === 'measurable' ? (
-              <>
-                <input type="number" min="0" step="0.01" value={form.target_value} onChange={(e) => setForm((c) => ({ ...c, target_value: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Target" />
-                <input value={form.target_unit} onChange={(e) => setForm((c) => ({ ...c, target_unit: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Unit" />
-                <input type="number" min="0" step="0.01" value={form.tolerance_value} onChange={(e) => setForm((c) => ({ ...c, tolerance_value: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Tolerance" />
-              </>
-            ) : null}
-            <button disabled={createItem.isPending} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300 md:col-span-6">
-              <Plus className="h-4 w-4" />
-              Add routine item
-            </button>
+          <form onSubmit={submitRoutine} className="app-card overflow-hidden p-0">
+            <div className="border-b border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40 sm:p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-300">Task composer</p>
+                  <h2 className="mt-1 text-xl font-black">Create a routine item</h2>
+                </div>
+                <span className="rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                  No defaults. Choose what matters.
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-5 p-4 sm:p-5">
+              <ComposerSection icon={Tags} title="What is it?" helper="Name the task and give it structured tags so filtering stays clean later.">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <SmartField label="Task name" helper="Use a short action phrase, like 'Walk for 20 minutes'." className="md:col-span-2">
+                    <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="form-input" placeholder="What will you do?" required />
+                  </SmartField>
+                  <SmartField label="Parent tag" helper="The broad area, for example Health, Learning, Career, Money.">
+                    <input value={form.parent_tag} onChange={(event) => setForm((current) => ({ ...current, parent_tag: event.target.value }))} className="form-input" placeholder="Health" required />
+                  </SmartField>
+                  <SmartField label="Sub-tag" helper="Optional narrower label, for example Physical, Mental, JavaScript.">
+                    <input value={form.sub_tag} onChange={(event) => setForm((current) => ({ ...current, sub_tag: event.target.value }))} className="form-input" placeholder="Physical, Mental, Deep work..." />
+                  </SmartField>
+                </div>
+              </ComposerSection>
+
+              <ComposerSection icon={Repeat} title="When should it appear?" helper="Pick a repeat pattern first. Date is only required when the schedule needs an anchor.">
+                <ChoiceGrid>
+                  {repeatOptions.map((option) => (
+                    <ChoiceCard
+                      key={option.value}
+                      label={option.label}
+                      helper={option.helper}
+                      selected={form.repeat_rule === option.value}
+                      onClick={() => setForm((current) => ({ ...current, repeat_rule: option.value }))}
+                    />
+                  ))}
+                </ChoiceGrid>
+                <div className={clsx('grid transition-all duration-300 ease-out', needsScheduleDate ? 'mt-4 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+                  <div className="overflow-hidden">
+                    <SmartField
+                      label={form.repeat_rule === 'once' ? 'Task date' : 'Weekly anchor date'}
+                      helper={form.repeat_rule === 'once' ? 'This one-time task will only show on this date.' : 'Only the weekday matters for weekly tasks.'}
+                    >
+                      <div className="relative">
+                        <CalendarDays className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <input type="date" value={form.scheduled_date} onChange={(event) => setForm((current) => ({ ...current, scheduled_date: event.target.value }))} className="form-input pl-11" required={needsScheduleDate} />
+                      </div>
+                    </SmartField>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <TimePicker
+                    label="Reminder time block"
+                    value={form.time_block}
+                    onChange={(value) => setForm((current) => ({ ...current, time_block: value }))}
+                    placeholder="Optional"
+                    helper="This is when the task is considered due. Leave empty for anytime tasks."
+                  />
+                </div>
+              </ComposerSection>
+
+              <ComposerSection icon={Gauge} title="How should it be judged?" helper="Simple tasks get 10/10 when done. Measurable tasks score against a numeric target.">
+                <ChoiceGrid>
+                  <ChoiceCard label="Simple" helper="Done, failed, skipped. Best for yes/no habits." selected={form.item_type === 'simple'} onClick={() => setForm((current) => ({ ...current, item_type: 'simple' }))} />
+                  <ChoiceCard label="Measurable" helper="Track an actual number against a target." selected={form.item_type === 'measurable'} onClick={() => setForm((current) => ({ ...current, item_type: 'measurable' }))} />
+                </ChoiceGrid>
+                <div className={clsx('grid transition-all duration-300 ease-out', form.item_type === 'measurable' ? 'mt-4 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+                  <div className="overflow-hidden rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4 dark:border-cyan-900/60 dark:bg-cyan-950/20">
+                    <div className="mb-3 flex items-start gap-2 text-sm text-cyan-900 dark:text-cyan-100">
+                      <Target className="mt-0.5 h-4 w-4 shrink-0" />
+                      <p><strong>Target</strong> is the goal number. <strong>Unit</strong> names what the number means. <strong>Tolerance</strong> is the amount of wiggle room that still counts as perfect.</p>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <SmartField label="Target" helper="Example: 30 for reading 30 pages.">
+                        <input type="number" min="0" step="0.01" value={form.target_value} onChange={(event) => setForm((current) => ({ ...current, target_value: event.target.value }))} className="form-input" placeholder="30" required={form.item_type === 'measurable'} />
+                      </SmartField>
+                      <SmartField label="Unit" helper="Example: minutes, pages, reps, rupees.">
+                        <input value={form.target_unit} onChange={(event) => setForm((current) => ({ ...current, target_unit: event.target.value }))} className="form-input" placeholder="minutes" required={form.item_type === 'measurable'} />
+                      </SmartField>
+                      <SmartField label="Tolerance" helper="Optional. Example: 5 means 25-35 can still score perfectly for target 30.">
+                        <input type="number" min="0" step="0.01" value={form.tolerance_value} onChange={(event) => setForm((current) => ({ ...current, tolerance_value: event.target.value }))} className="form-input" placeholder="0" />
+                      </SmartField>
+                    </div>
+                  </div>
+                </div>
+              </ComposerSection>
+
+              <ComposerSection icon={AlarmClock} title="Controls on the card" helper="These decide which extra controls appear on the Today card after creation.">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <SmartField label="Priority" helper="Priority controls sorting and the quick badge color.">
+                    <div className="relative">
+                      <select value={form.priority} onChange={(event) => setForm((current) => ({ ...current, priority: event.target.value as RoutineForm['priority'] }))} className="form-input appearance-none pr-10" required>
+                        <option value="">Choose priority</option>
+                        {priorityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                    {form.priority ? <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{priorityOptions.find((option) => option.value === form.priority)?.helper}</p> : null}
+                  </SmartField>
+                  <ToggleCard
+                    checked={form.reminder_enabled}
+                    title="Reminder bell"
+                    helper="Shows the bell toggle and allows automatic reminder delivery when SMTP is configured."
+                    onClick={() => setForm((current) => ({ ...current, reminder_enabled: !current.reminder_enabled }))}
+                  />
+                  <ToggleCard
+                    checked={form.time_tracking_enabled}
+                    title="Time tracking"
+                    helper="Shows stopwatch and manual minutes controls on this task card."
+                    onClick={() => setForm((current) => ({ ...current, time_tracking_enabled: !current.time_tracking_enabled }))}
+                  />
+                </div>
+              </ComposerSection>
+
+              <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {canCreateRoutine ? 'Ready to add.' : 'Fill the required choices above to create the task.'}
+                </p>
+                <button disabled={createItem.isPending || !canCreateRoutine} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-600 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-300">
+                  <Plus className="h-4 w-4" />
+                  {createItem.isPending ? 'Adding...' : 'Add routine item'}
+                </button>
+              </div>
+            </div>
           </form>
         </>
       ) : null}
     </div>
+  );
+}
+
+function ComposerSection({ icon: Icon, title, helper, children }: { icon: ComponentType<{ className?: string }>; title: string; helper: string; children: ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white/80 p-4 transition duration-300 hover:border-cyan-200 hover:shadow-[0_14px_36px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-950/60 dark:hover:border-cyan-900/70">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white dark:bg-white dark:text-slate-950">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div>
+          <h3 className="font-black">{title}</h3>
+          <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{helper}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function SmartField({ label, helper, className, children }: { label: string; helper: string; className?: string; children: ReactNode }) {
+  return (
+    <label className={clsx('block', className)}>
+      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{label}</span>
+      <span className="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">{helper}</span>
+      <span className="mt-2 block">{children}</span>
+    </label>
+  );
+}
+
+function ChoiceGrid({ children }: { children: ReactNode }) {
+  return <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>;
+}
+
+function ChoiceCard({ label, helper, selected, onClick }: { label: string; helper: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        'min-h-24 rounded-2xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-sm',
+        selected
+          ? 'border-cyan-400 bg-cyan-50 text-cyan-950 ring-4 ring-cyan-100 dark:border-cyan-500 dark:bg-cyan-950/30 dark:text-cyan-50 dark:ring-cyan-950/60'
+          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700',
+      )}
+    >
+      <span className="block text-sm font-black">{label}</span>
+      <span className="mt-2 block text-xs leading-5 text-slate-500 dark:text-slate-400">{helper}</span>
+    </button>
+  );
+}
+
+function ToggleCard({ checked, title, helper, onClick }: { checked: boolean; title: string; helper: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        'rounded-2xl border p-4 text-left transition duration-200 hover:-translate-y-0.5',
+        checked
+          ? 'border-emerald-400 bg-emerald-50 ring-4 ring-emerald-100 dark:border-emerald-500 dark:bg-emerald-950/30 dark:ring-emerald-950/60'
+          : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950',
+      )}
+    >
+      <span className="flex items-center justify-between gap-3">
+        <span className="font-black">{title}</span>
+        <span className={clsx('h-6 w-11 rounded-full p-1 transition', checked ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800')}>
+          <span className={clsx('block h-4 w-4 rounded-full bg-white shadow-sm transition', checked ? 'translate-x-5' : 'translate-x-0')} />
+        </span>
+      </span>
+      <span className="mt-2 block text-xs leading-5 text-slate-500 dark:text-slate-400">{helper}</span>
+    </button>
   );
 }
 

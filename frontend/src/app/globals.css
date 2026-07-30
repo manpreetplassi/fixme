@@ -69,6 +69,10 @@ select option {
     @apply min-h-11 min-w-11;
   }
 
+  .form-input {
+    @apply min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-950 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-slate-700 dark:focus:ring-cyan-950/60;
+  }
+
   .mobile-bottom-safe {
     padding-bottom: calc(6.75rem + env(safe-area-inset-bottom));
   }

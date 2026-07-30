@@ -154,6 +154,14 @@ Use this file as the task runner.
 - [x] Add milestone recognition to streaks for day 7/30/90.
 - [x] Build History as a forgiving contribution-grid heatmap.
 
+## Phase 19 - Today task form UX polish
+
+- [x] Replace the flat add-task form with a guided, explainable task composer.
+- [x] Remove silent defaults from task creation fields.
+- [x] Clarify measurable target, unit, and tolerance fields in the UI.
+- [x] Improve date/time picker presentation without adding a new dependency.
+- [x] Add polished animated states for optional sections.
+
 ## Phase 10 - Reflections integration
 
 - [ ] Add optional reflection note prompts for completion outcomes.

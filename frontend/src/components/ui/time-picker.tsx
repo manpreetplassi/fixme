@@ -1,6 +1,7 @@
 'use client';
 
-/** Converts "HH:MM" (24h) → { hour12, minute, ampm } */
+import { Clock, X } from 'lucide-react';
+
 function from24(value: string): { hour: string; minute: string; ampm: 'AM' | 'PM' } {
   if (!value) return { hour: '12', minute: '00', ampm: 'AM' };
   const [h, m] = value.split(':').map(Number);
@@ -9,7 +10,6 @@ function from24(value: string): { hour: string; minute: string; ampm: 'AM' | 'PM
   return { hour: String(hour12), minute: String(m).padStart(2, '0'), ampm };
 }
 
-/** Converts { hour12, minute, ampm } → "HH:MM" (24h) */
 function to24(hour: string, minute: string, ampm: 'AM' | 'PM'): string {
   let h = Number(hour) % 12;
   if (ampm === 'PM') h += 12;
@@ -21,12 +21,13 @@ const MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50
 
 interface TimePickerProps {
   label?: string;
-  value: string; // "HH:MM" 24h or ""
+  value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  helper?: string;
 }
 
-export function TimePicker({ label, value, onChange }: TimePickerProps) {
+export function TimePicker({ label, value, onChange, placeholder = 'No time set', helper }: TimePickerProps) {
   const parsed = from24(value);
 
   function update(field: 'hour' | 'minute' | 'ampm', next: string) {
@@ -40,69 +41,70 @@ export function TimePicker({ label, value, onChange }: TimePickerProps) {
   }
 
   const inner = (
-    <div className="mt-1 flex items-center gap-1">
-      {/* Hour */}
-      <select
-        value={value ? parsed.hour : ''}
-        onChange={(e) => update('hour', e.target.value || '12')}
-        className="w-16 rounded-lg border border-slate-200 bg-transparent px-2 py-2 text-center text-sm font-semibold text-slate-950 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:border-slate-800 dark:text-slate-100"
-      >
-        {!value && <option value="">--</option>}
-        {HOURS.map((h) => (
-          <option key={h} value={h}>{h}</option>
-        ))}
-      </select>
-
-      <span className="text-lg font-black text-slate-400">:</span>
-
-      {/* Minute */}
-      <select
-        value={value ? parsed.minute : ''}
-        onChange={(e) => update('minute', e.target.value || '00')}
-        className="w-16 rounded-lg border border-slate-200 bg-transparent px-2 py-2 text-center text-sm font-semibold text-slate-950 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:border-slate-800 dark:text-slate-100"
-      >
-        {!value && <option value="">--</option>}
-        {MINUTES.map((m) => (
-          <option key={m} value={m}>{m}</option>
-        ))}
-      </select>
-
-      {/* AM / PM toggle */}
-      <div className="flex overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
-        {(['AM', 'PM'] as const).map((ap) => (
-          <button
-            key={ap}
-            type="button"
-            onClick={() => update('ampm', ap)}
-            className={
-              value && parsed.ampm === ap
-                ? 'bg-slate-950 px-3 py-2 text-xs font-bold text-white dark:bg-white dark:text-slate-950'
-                : 'px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }
-          >
-            {ap}
-          </button>
-        ))}
-      </div>
-
-      {/* Clear */}
-      {value ? (
-        <button
-          type="button"
-          onClick={() => onChange('')}
-          className="rounded-lg border border-slate-200 px-2 py-2 text-xs text-slate-400 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
-          title="Clear time"
+    <div className="mt-2">
+      <div className="group flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm transition duration-200 focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyan-100 dark:border-slate-800 dark:bg-slate-950 dark:focus-within:ring-cyan-950/60">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-200">
+          <Clock className="h-4 w-4" />
+        </span>
+        <select
+          value={value ? parsed.hour : ''}
+          onChange={(event) => update('hour', event.target.value || '12')}
+          className="h-10 w-20 rounded-xl border border-slate-200 bg-transparent px-3 text-center text-sm font-bold text-slate-950 outline-none transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-100 dark:hover:bg-slate-900"
+          aria-label="Hour"
         >
-          ✕
-        </button>
-      ) : null}
+          {!value && <option value="">Hour</option>}
+          {HOURS.map((hour) => (
+            <option key={hour} value={hour}>{hour}</option>
+          ))}
+        </select>
+        <span className="text-lg font-black text-slate-400">:</span>
+        <select
+          value={value ? parsed.minute : ''}
+          onChange={(event) => update('minute', event.target.value || '00')}
+          className="h-10 w-24 rounded-xl border border-slate-200 bg-transparent px-3 text-center text-sm font-bold text-slate-950 outline-none transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-100 dark:hover:bg-slate-900"
+          aria-label="Minute"
+        >
+          {!value && <option value="">Minute</option>}
+          {MINUTES.map((minute) => (
+            <option key={minute} value={minute}>{minute}</option>
+          ))}
+        </select>
+        <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900">
+          {(['AM', 'PM'] as const).map((ampm) => (
+            <button
+              key={ampm}
+              type="button"
+              onClick={() => update('ampm', ampm)}
+              className={
+                value && parsed.ampm === ampm
+                  ? 'rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white shadow-sm transition dark:bg-white dark:text-slate-950'
+                  : 'rounded-lg px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-white hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+              }
+            >
+              {ampm}
+            </button>
+          ))}
+        </div>
+        {!value ? <span className="px-2 text-xs font-semibold text-slate-400">{placeholder}</span> : null}
+        {value ? (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            title="Clear time"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        ) : null}
+      </div>
+      {helper ? <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{helper}</p> : null}
     </div>
   );
 
   if (!label) return inner;
 
   return (
-    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">
       {label}
       {inner}
     </label>
