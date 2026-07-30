@@ -34,6 +34,8 @@ async function testTodayScoreContract(): Promise<void> {
     { ...repo(completions), find: async () => completions } as never,
     repo([]) as never,
     repo([]) as never,
+    repo([]) as never,
+    repo([]) as never,
     { sendDigest: async () => ({}), getDeliveryStatus: () => ({ configured: false, missing: [], override_recipient_configured: false }) } as never,
     { findAll: async () => [] } as never,
   );

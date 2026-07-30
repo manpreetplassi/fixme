@@ -109,10 +109,10 @@ Use this file as the task runner.
 
 ## Phase 8 - Finish the Hobbies to Lifestyle Activities cutover
 
-- [ ] Re-run the idempotent hobby backfill to catch drift.
-- [ ] Cut frontend `/hobbies` over to lifestyle_activities filtered to `activity_type: 'hobby'`.
-- [ ] Surface Hobbies and Learning-log entries directly inside Today's list.
-- [ ] Retire hobbies module and remove it from app.module.ts after verification.
+- [x] Re-run the idempotent hobby backfill to catch drift.
+- [x] Cut frontend `/hobbies` over to lifestyle_activities filtered to `activity_type: 'hobby'`.
+- [x] Surface Hobbies and Learning-log entries directly inside Today's list.
+- [x] Retire hobbies module and remove it from app.module.ts after verification.
 
 ## Phase 9 - Status, automation, and flexible/measurable targets
 
