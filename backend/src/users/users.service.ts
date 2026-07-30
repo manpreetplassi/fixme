@@ -7,6 +7,8 @@ import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.enti
 import { MealEntry } from '../lifestyle/entities/meal-entry.entity';
 import { MoneyEntry } from '../money-tracker/entities/money-entry.entity';
 import { Reflection } from '../reflections/entities/reflection.entity';
+import { CareArea } from '../self-care/entities/care-area.entity';
+import { CareTask } from '../self-care/entities/care-task.entity';
 import { Streak } from '../streaks/entities/streak.entity';
 import { RoutineCompletion } from '../today/entities/routine-completion.entity';
 import { RoutineItem } from '../today/entities/routine-item.entity';
@@ -26,6 +28,8 @@ export class UsersService {
     @InjectRepository(MealEntry) private readonly mealsRepo: Repository<MealEntry>,
     @InjectRepository(HobbyLog) private readonly hobbyLogsRepo: Repository<HobbyLog>,
     @InjectRepository(Streak) private readonly streaksRepo: Repository<Streak>,
+    @InjectRepository(CareArea) private readonly careAreasRepo: Repository<CareArea>,
+    @InjectRepository(CareTask) private readonly careTasksRepo: Repository<CareTask>,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
@@ -82,6 +86,8 @@ export class UsersService {
       meal_entries: this.mealsRepo,
       hobby_logs: this.hobbyLogsRepo,
       streaks: this.streaksRepo,
+      care_tasks: this.careTasksRepo,
+      care_areas: this.careAreasRepo,
     };
     return map[category];
   }
@@ -97,6 +103,8 @@ export class UsersService {
       'meal_entries',
       'hobby_logs',
       'streaks',
+      'care_tasks',
+      'care_areas',
     ];
     const entries = await Promise.all(
       categories.map(async (cat) => [cat, await this.repoFor(cat).count({ where: { user: { id: userId } } })] as const),

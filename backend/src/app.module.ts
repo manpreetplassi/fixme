@@ -15,6 +15,7 @@ import { LifestyleModule } from './lifestyle/lifestyle.module';
 import { MoneyTrackerModule } from './money-tracker/money-tracker.module';
 import { ReflectionsModule } from './reflections/reflections.module';
 import { ReelsVaultModule } from './reels-vault/reels-vault.module';
+import { SelfCareModule } from './self-care/self-care.module';
 import { SolutionsBankModule } from './solutions-bank/solutions-bank.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { TodayModule } from './today/today.module';
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
     ReelsVaultModule,
     MoneyTrackerModule,
     SolutionsBankModule,
+    SelfCareModule,
     AnalyticsModule,
     GeminiModule,
   ],

@@ -19,6 +19,8 @@ import { RoutineCompletion } from '../today/entities/routine-completion.entity';
 import { RoutineItem } from '../today/entities/routine-item.entity';
 import { ScreenCheckIn } from '../today/entities/screen-check-in.entity';
 import { User } from '../users/entities/user.entity';
+import { CareArea } from '../self-care/entities/care-area.entity';
+import { CareTask } from '../self-care/entities/care-task.entity';
 import { getDatabaseUrlFromEnv } from './database-url';
 import { migrations } from './migrations';
 
@@ -27,7 +29,7 @@ loadEnv();
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: getDatabaseUrlFromEnv(),
-  entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn, LifestyleDay, MealEntry, MealTemplate, LifestyleActivity],
+  entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn, LifestyleDay, MealEntry, MealTemplate, LifestyleActivity, CareArea, CareTask],
   migrations,
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });

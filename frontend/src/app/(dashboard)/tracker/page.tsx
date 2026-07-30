@@ -2,9 +2,10 @@
 
 import clsx from 'clsx';
 import { CalendarDays, CheckCircle2, CircleDashed, Clock, Coins, SkipForward, XCircle } from 'lucide-react';
+import { useQueries } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
-import { TodayRoutineItem } from '@/lib/api/today';
+import { getToday, TodayRoutineItem } from '@/lib/api/today';
 import { useToday } from '@/hooks/use-today';
 
 const statusStyles: Record<string, string> = {
@@ -26,6 +27,14 @@ const statusIcons: Record<string, typeof CheckCircle2> = {
 export default function TrackerHistoryPage() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const history = useToday(selectedDate);
+  const heatmapDates = useMemo(() => lastDays(new Date().toISOString().slice(0, 10), 35), []);
+  const heatmap = useQueries({
+    queries: heatmapDates.map((date) => ({
+      queryKey: ['today', date],
+      queryFn: () => getToday(date),
+      staleTime: 60_000,
+    })),
+  });
 
   const totals = useMemo(() => {
     const items = history.data?.items ?? [];
@@ -38,11 +47,44 @@ export default function TrackerHistoryPage() {
     };
   }, [history.data]);
 
+  const heatmapCells = heatmapDates.map((date, index) => {
+    const items = heatmap[index].data?.items.filter((item) => item.type === 'routine') ?? [];
+    const completed = items.filter((item) => item.is_done).length;
+    const score = items.length ? completed / items.length : 0;
+    return { date, completed, total: items.length, score };
+  });
+
+  const currentStreak = [...heatmapCells].reverse().reduce((count, day) => {
+    if (count === -1) return -1;
+    if (day.total === 0) return count;
+    return day.score >= 0.8 ? count + 1 : -1;
+  }, 0);
+  const milestone = [7, 30, 90].includes(currentStreak) ? currentStreak : null;
+
   return (
     <div>
       <PageHeader title="History" subtitle="Browse past routine completions from the unified Today timeline." />
 
       <section className="app-card mb-4 p-4 sm:mb-6 sm:p-5">
+        <div className="mb-5">
+          <div className="grid grid-cols-7 gap-1">
+            {heatmapCells.map((day) => (
+              <button
+                key={day.date}
+                type="button"
+                title={`${day.date}: ${day.completed}/${day.total} completed`}
+                onClick={() => setSelectedDate(day.date)}
+                className={clsx('h-9 rounded-md ring-1 ring-black/5 dark:ring-white/10', intensityClass(day.score), selectedDate === day.date ? 'outline outline-2 outline-slate-950 dark:outline-white' : '')}
+              />
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span>Less complete</span>
+            {milestone ? <span className="rounded-full bg-emerald-100 px-3 py-1 font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">Day {milestone} milestone</span> : null}
+            <span>More complete</span>
+          </div>
+        </div>
+
         <label className="grid max-w-xs gap-2 text-sm font-semibold">
           <span className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300">
             <CalendarDays className="h-4 w-4" />
@@ -106,7 +148,7 @@ function HistoryRow({ item }: { item: TodayRoutineItem }) {
               <Icon className="h-3.5 w-3.5" />
               {item.status.replace('_', ' ')}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-300">{item.category}</span>
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-300">{[item.parent_tag ?? item.category, item.sub_tag].filter(Boolean).join(' / ')}</span>
           </div>
           <h2 className="mt-2 truncate text-lg font-bold">{item.title}</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.repeat_rule}</p>
@@ -121,8 +163,14 @@ function HistoryRow({ item }: { item: TodayRoutineItem }) {
           ) : null}
           <span className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-800">
             <CheckCircle2 className="h-4 w-4" />
-            {item.points_earned}/{item.points} pts
+            {item.score ?? 0}/10
           </span>
+          {item.duration_minutes ? (
+            <span className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+              <Clock className="h-4 w-4" />
+              {item.duration_minutes} min
+            </span>
+          ) : null}
           {item.linked_money_entry_id ? (
             <span className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-800">
               <Coins className="h-4 w-4" />
@@ -133,4 +181,21 @@ function HistoryRow({ item }: { item: TodayRoutineItem }) {
       </div>
     </article>
   );
+}
+
+function lastDays(endDate: string, count: number) {
+  const end = new Date(`${endDate}T00:00:00`);
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(end);
+    date.setDate(end.getDate() - (count - 1 - index));
+    return date.toISOString().slice(0, 10);
+  });
+}
+
+function intensityClass(score: number) {
+  if (score >= 0.85) return 'bg-emerald-600';
+  if (score >= 0.6) return 'bg-emerald-400';
+  if (score >= 0.3) return 'bg-emerald-200 dark:bg-emerald-900';
+  if (score > 0) return 'bg-slate-300 dark:bg-slate-700';
+  return 'bg-slate-100 dark:bg-slate-900';
 }

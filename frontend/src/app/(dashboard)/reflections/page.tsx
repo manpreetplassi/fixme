@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { HeartPulse, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { useCreateReflection, useDeleteReflection, useReflectionWeek, useUpdateReflection } from '@/hooks/use-reflections';
 import { getAddictionLabel } from '@/lib/api/users';
@@ -147,6 +147,8 @@ export default function ReflectionsPage() {
           <textarea className="min-h-20 resize-none rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" value={form.blocker_details} onChange={(event) => setForm((current) => ({ ...current, blocker_details: event.target.value }))} />
         </label>
 
+        {form.primary_blocker.trim() ? <UrgeSupportPrompt blocker={form.primary_blocker} /> : null}
+
         <label className="grid gap-1 text-sm font-medium">
           Solution to try
           <textarea className="min-h-20 resize-none rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" value={form.solution_to_try} onChange={(event) => setForm((current) => ({ ...current, solution_to_try: event.target.value }))} />
@@ -194,6 +196,7 @@ export default function ReflectionsPage() {
                 {reflection.what_went_well ? <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{reflection.what_went_well}</p> : null}
                 {reflection.what_didnt_work ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{reflection.what_didnt_work}</p> : null}
                 {reflection.solution_to_try ? <p className="mt-3 text-sm font-medium text-emerald-600 dark:text-emerald-300">{reflection.solution_to_try}</p> : null}
+                {reflection.primary_blocker ? <UrgeSupportPrompt blocker={reflection.primary_blocker} compact /> : null}
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
@@ -210,4 +213,20 @@ export default function ReflectionsPage() {
       </div>
     </div>
   );
+}
+
+function UrgeSupportPrompt({ blocker, compact = false }: { blocker: string; compact?: boolean }) {
+  return (
+    <div className={clsxLike('rounded-lg border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900 dark:border-cyan-900/70 dark:bg-cyan-950/30 dark:text-cyan-100', compact ? 'mt-4' : '')}>
+      <div className="flex items-center gap-2 font-bold">
+        <HeartPulse className="h-4 w-4" />
+        In-the-moment support
+      </div>
+      <p className="mt-2">Blocker named: {blocker}. Take 60 seconds: breathe in for 4, hold for 2, breathe out for 6. Notice the urge as a wave, name one body sensation, then choose the next smallest helpful action.</p>
+    </div>
+  );
+}
+
+function clsxLike(...classes: Array<string | false>) {
+  return classes.filter(Boolean).join(' ');
 }

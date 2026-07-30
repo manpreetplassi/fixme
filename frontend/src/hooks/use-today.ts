@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRoutineItem, deleteRoutineItem, deleteScreenCheckIn, getScreenSummary, getToday, saveScreenCheckIn, sendReminderDigest, setRoutineDone, updateRoutineItem } from '@/lib/api/today';
+import { createRoutineItem, deleteRoutineItem, deleteScreenCheckIn, getReminderStatus, getScreenSummary, getToday, saveScreenCheckIn, sendReminderDigest, setRoutineDone, startRoutineTimer, stopRoutineTimer, updateRoutineItem } from '@/lib/api/today';
 
 export function useToday(date?: string) {
   return useQuery({
@@ -14,6 +14,13 @@ export function useScreenSummary(date?: string) {
   return useQuery({
     queryKey: ['screen-summary', date],
     queryFn: () => getScreenSummary(date),
+  });
+}
+
+export function useReminderStatus() {
+  return useQuery({
+    queryKey: ['reminder-status'],
+    queryFn: getReminderStatus,
   });
 }
 
@@ -44,7 +51,23 @@ export function useDeleteRoutineItem() {
 export function useSetRoutineDone() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; rating?: number | null; linked_money_entry_id?: string | null } }) => setRoutineDone(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; actual_value?: number | null; score?: number | null; rating?: number | null; linked_money_entry_id?: string | null } }) => setRoutineDone(id, payload),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['today'] }),
+  });
+}
+
+export function useStartRoutineTimer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date }: { id: string; date?: string }) => startRoutineTimer(id, date),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['today'] }),
+  });
+}
+
+export function useStopRoutineTimer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date }: { id: string; date?: string }) => stopRoutineTimer(id, date),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['today'] }),
   });
 }

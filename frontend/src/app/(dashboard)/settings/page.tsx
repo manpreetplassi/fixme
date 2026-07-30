@@ -17,6 +17,8 @@ const CATEGORIES: { key: string; label: string; dependsOn?: string[] }[] = [
   { key: 'meal_entries', label: 'Meal entries' },
   { key: 'hobby_logs', label: 'Hobby logs' },
   { key: 'streaks', label: 'Streaks' },
+  { key: 'care_tasks', label: 'Self-care tasks' },
+  { key: 'care_areas', label: 'Self-care areas' },
 ];
 
 export default function SettingsPage() {

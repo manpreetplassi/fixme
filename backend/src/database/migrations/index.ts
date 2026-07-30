@@ -6,6 +6,8 @@ import { UnifyRoutineMoneyAndHobbies1720400000000 } from './1720400000000-UnifyR
 import { BackfillUnifiedRoutineMoneyAndHobbiesDrift1720500000000 } from './1720500000000-BackfillUnifiedRoutineMoneyAndHobbiesDrift';
 import { AddAddictionLabel1720600000000 } from './1720600000000-AddAddictionLabel';
 import { MergeScreenCheckIns1720700000000 } from './1720700000000-MergeScreenCheckIns';
+import { AddSelfCare1720800000000 } from './1720800000000-AddSelfCare';
+import { RoutineStatusTimingTags1720900000000 } from './1720900000000-RoutineStatusTimingTags';
 
 export const migrations = [
   InitialSchema1719600000000,
@@ -16,4 +18,6 @@ export const migrations = [
   BackfillUnifiedRoutineMoneyAndHobbiesDrift1720500000000,
   AddAddictionLabel1720600000000,
   MergeScreenCheckIns1720700000000,
+  AddSelfCare1720800000000,
+  RoutineStatusTimingTags1720900000000,
 ];

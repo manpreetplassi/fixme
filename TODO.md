@@ -92,7 +92,7 @@ Use this file as the task runner.
 
 ## Phase 6 - Fix known bugs and UI inconsistencies
 
-- [ ] Make Today row reminder bell a real `reminder_enabled` toggle.
+- [x] Make Today row reminder bell a real `reminder_enabled` toggle.
 - [ ] Remove tap-target styling from the decorative Today time-block badge.
 - [ ] Normalize input/button padding across pages to match Today (`px-4 py-3`).
 - [ ] Remove raw admin/catalog fields from the everyday add-item form if still present after Phase 5.
@@ -116,13 +116,43 @@ Use this file as the task runner.
 
 ## Phase 9 - Status, automation, and flexible/measurable targets
 
-- [ ] Use `routine_completions.status` as done / failed / skipped.
-- [ ] Add day-rollover background job for missing recurring completions.
-- [ ] Display missed past completions as failed when no row exists.
-- [ ] Add measurable item type with target, actual, and tolerance.
-- [ ] Score measurable items on a 0-10 scale.
-- [ ] Map simple item results onto the same scoring scale.
-- [ ] Add per-date planning overrides using existing `plan_id` columns.
+- [x] Use `routine_completions.status` as done / failed / skipped.
+- [x] Add day-rollover background job for missing recurring completions.
+- [x] Display missed past completions as failed when no row exists.
+- [x] Add measurable item type with target, actual, and tolerance.
+- [x] Score measurable items on a 0-10 scale.
+- [x] Map simple item results onto the same scoring scale.
+- [x] Add per-date planning overrides using existing `plan_id` columns.
+
+## Phase 15 - Time tracking on routine items
+
+- [x] Add `time_tracking_enabled` to `routine_items`, set only at creation time.
+- [x] Show stopwatch and manual time-taken controls only for time-tracked items.
+- [x] Add `timer_started_at` to `routine_completions`.
+- [x] Make Start write only `timer_started_at`.
+- [x] Compute live elapsed time on the frontend from `timer_started_at`.
+- [x] Make Stop write rounded `duration_minutes` and clear `timer_started_at`.
+- [x] Add manual time-taken entry that writes `duration_minutes` directly.
+
+## Phase 16 - Quick controls and real tagging on task cards
+
+- [x] Add quick status/priority controls directly on each task card.
+- [x] Replace single free-text category display/input with parent tag plus optional sub-tag.
+- [x] Keep tags extensible rather than hardcoded to a fixed list.
+- [x] Update task filtering/display to use structured tags.
+
+## Phase 17 - Fix the reminder system
+
+- [x] Replace manual-only reminder digest with scheduled automatic reminder checks.
+- [x] Make per-item reminder bell a real `reminder_enabled` toggle.
+- [x] Show visible UI feedback for reminder delivery configuration.
+- [x] Add context-aware reminder trigger support where practical.
+
+## Phase 18 - Recovery-support additions
+
+- [x] Surface an in-the-moment urge-support tool when a Reflection primary blocker is logged.
+- [x] Add milestone recognition to streaks for day 7/30/90.
+- [x] Build History as a forgiving contribution-grid heatmap.
 
 ## Phase 10 - Reflections integration
 

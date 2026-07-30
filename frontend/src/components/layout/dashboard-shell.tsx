@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, ChevronRight, Film, HeartPulse, House, IndianRupee, LogOut, Settings, SquareCheckBig } from 'lucide-react';
+import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, ChevronRight, Film, HeartPulse, House, IndianRupee, LogOut, Settings, Sparkles, SquareCheckBig } from 'lucide-react';
 import { useAuth, useLogout } from '@/hooks/use-auth';
 import { useNavVisibility } from '@/hooks/use-nav-visibility';
 import { ProfileDrawer } from './profile-drawer';
@@ -15,6 +15,7 @@ export const navItems = [
   { href: '/tracker', label: 'History', icon: SquareCheckBig },
   { href: '/money', label: 'Money', icon: IndianRupee },
   { href: '/lifestyle', label: 'Lifestyle', icon: HeartPulse },
+  { href: '/self-care', label: 'Self Care', icon: Sparkles },
   { href: '/reels', label: 'Reels Vault', icon: Film },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/learning', label: 'Learning', icon: BookOpen },
@@ -70,7 +71,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const visibleItems = ready ? navItems.filter((item) => !isHidden(item.href)) : navItems;
 
   const allNavWithSettings = [...navItems, { href: '/settings', label: 'Settings', icon: Settings }];
-  const currentItem = allNavWithSettings.find((item) => item.href === pathname) ?? allNavWithSettings[0];
+  const currentItem = allNavWithSettings.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ?? allNavWithSettings[0];
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#ecfeff_45%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_25%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#020617_100%)]">
@@ -123,7 +124,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   className={clsx(
                     'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
-                    pathname === item.href ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900',
+                    (pathname === item.href || pathname.startsWith(`${item.href}/`)) ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -163,7 +164,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <div className="flex overflow-x-auto scrollbar-none">
           {[...visibleItems, { href: '/settings', label: 'Settings', icon: Settings }].map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link
                 key={item.href}

@@ -42,6 +42,18 @@ export class TodayController {
     return this.service.setDone(user, id, dto);
   }
 
+  @Post('items/:id/timer/start')
+  @ApiOperation({ summary: 'Start a routine item timer for a date' })
+  startTimer(@CurrentUser() user: User, @Param('id') id: string, @Body() dto: SetRoutineDoneDto) {
+    return this.service.startTimer(user, id, dto.date);
+  }
+
+  @Post('items/:id/timer/stop')
+  @ApiOperation({ summary: 'Stop a routine item timer and write duration' })
+  stopTimer(@CurrentUser() user: User, @Param('id') id: string, @Body() dto: SetRoutineDoneDto) {
+    return this.service.stopTimer(user, id, dto.date);
+  }
+
   @Post('screen-checkins')
   @ApiOperation({ summary: 'Create or update daily screen check-in' })
   checkIn(@CurrentUser() user: User, @Body() dto: ScreenCheckInDto) {
@@ -64,5 +76,11 @@ export class TodayController {
   @ApiOperation({ summary: 'Send optional overdue routine reminder digest' })
   sendReminderDigest(@CurrentUser() user: User, @Query('date') date?: string) {
     return this.service.sendReminderDigest(user, date);
+  }
+
+  @Get('reminders/status')
+  @ApiOperation({ summary: 'Get reminder delivery configuration status' })
+  getReminderStatus() {
+    return this.service.getReminderStatus();
   }
 }

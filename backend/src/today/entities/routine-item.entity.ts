@@ -17,6 +17,12 @@ export class RoutineItem {
   category: string;
 
   @Column({ type: 'varchar', nullable: true })
+  parent_tag: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  sub_tag: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   time_block: string | null;
 
   @Column({ default: 'important' })
@@ -25,8 +31,32 @@ export class RoutineItem {
   @Column({ default: 'daily' })
   repeat_rule: string;
 
+  @Column({ type: 'date', nullable: true })
+  scheduled_date: string | null;
+
+  @Column({ default: 'simple' })
+  item_type: string;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  target_value: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  target_unit: string | null;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  tolerance_value: number | null;
+
   @Column({ default: false })
   reminder_enabled: boolean;
+
+  @Column({ default: 'time' })
+  reminder_trigger_type: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  reminder_trigger_item_id: string | null;
+
+  @Column({ default: false })
+  time_tracking_enabled: boolean;
 
   @Column({ default: true })
   is_active: boolean;

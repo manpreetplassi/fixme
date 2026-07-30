@@ -6,6 +6,8 @@ import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.enti
 import { MealEntry } from '../lifestyle/entities/meal-entry.entity';
 import { MoneyEntry } from '../money-tracker/entities/money-entry.entity';
 import { Reflection } from '../reflections/entities/reflection.entity';
+import { CareArea } from '../self-care/entities/care-area.entity';
+import { CareTask } from '../self-care/entities/care-task.entity';
 import { Streak } from '../streaks/entities/streak.entity';
 import { RoutineCompletion } from '../today/entities/routine-completion.entity';
 import { RoutineItem } from '../today/entities/routine-item.entity';
@@ -26,6 +28,8 @@ import { UsersService } from './users.service';
       MealEntry,
       HobbyLog,
       Streak,
+      CareArea,
+      CareTask,
     ]),
   ],
   controllers: [UsersController],

@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -6,25 +6,46 @@ const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 export class CreateRoutineItemDto {
   @ApiPropertyOptional() @IsString() title: string;
   @ApiPropertyOptional() @IsString() category: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
   @ApiPropertyOptional() @IsIn(['urgent', 'important', 'low']) priority: string;
   @ApiPropertyOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsIn(['simple', 'measurable']) item_type?: string;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) target_value?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() target_unit?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) tolerance_value?: number | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() reminder_enabled?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsIn(['time', 'after_item', 'check_in']) reminder_trigger_type?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() reminder_trigger_item_id?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() time_tracking_enabled?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) display_order?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points?: number;
+  @ApiPropertyOptional() @IsOptional() @IsString() plan_id?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }
 
 export class UpdateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsString() title?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() category?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsIn(['urgent', 'important', 'low']) priority?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsIn(['simple', 'measurable']) item_type?: string;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) target_value?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() target_unit?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) tolerance_value?: number | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() reminder_enabled?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsIn(['time', 'after_item', 'check_in']) reminder_trigger_type?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() reminder_trigger_item_id?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() is_active?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) display_order?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points?: number;
+  @ApiPropertyOptional() @IsOptional() @IsString() plan_id?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }
 
@@ -35,6 +56,8 @@ export class SetRoutineDoneDto {
   @ApiPropertyOptional() @IsOptional() @IsString() note?: string;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points_earned?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) duration_minutes?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) actual_value?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) score?: number | null;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) rating?: number | null;
   @ApiPropertyOptional() @IsOptional() @IsUUID() linked_money_entry_id?: string | null;
 }

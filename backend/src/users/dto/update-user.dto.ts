@@ -80,6 +80,8 @@ export const DELETABLE_CATEGORIES = [
   'meal_entries',
   'hobby_logs',
   'streaks',
+  'care_tasks',
+  'care_areas',
 ] as const;
 
 export type DeletableCategory = (typeof DELETABLE_CATEGORIES)[number];

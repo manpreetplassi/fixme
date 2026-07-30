@@ -41,6 +41,15 @@ export class RoutineCompletion {
   @Column({ type: 'int', nullable: true })
   duration_minutes: number | null;
 
+  @Column({ type: 'timestamp', nullable: true })
+  timer_started_at: Date | null;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  actual_value: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  score: number | null;
+
   @Column({ type: 'int', nullable: true })
   rating: number | null;
 

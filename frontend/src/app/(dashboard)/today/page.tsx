@@ -1,12 +1,12 @@
 'use client';
 
 import clsx from 'clsx';
-import { Bell, BellOff, Check, Clock, Monitor, MonitorOff, Plus, Send, Trash2, Video, X } from 'lucide-react';
+import { Bell, BellOff, Check, Clock, Pause, Play, Plus, Save, TimerReset, Trash2, Video, X, Monitor, MonitorOff } from 'lucide-react';
 import Link from 'next/link';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { TodayRoutineItem } from '@/lib/api/today';
-import { useCreateRoutineItem, useDeleteRoutineItem, useDeleteScreenCheckIn, useSaveScreenCheckIn, useSendReminderDigest, useSetRoutineDone, useToday } from '@/hooks/use-today';
+import { useCreateRoutineItem, useDeleteRoutineItem, useDeleteScreenCheckIn, useSaveScreenCheckIn, useSetRoutineDone, useStartRoutineTimer, useStopRoutineTimer, useToday, useUpdateRoutineItem } from '@/hooks/use-today';
 import { useLifestyleToday } from '@/hooks/use-lifestyle';
 import { TimePicker } from '@/components/ui/time-picker';
 
@@ -22,36 +22,51 @@ const categoryClass: Record<string, string> = {
   learning: 'text-sky-600 dark:text-sky-300',
   money: 'text-lime-600 dark:text-lime-300',
   habit: 'text-violet-600 dark:text-violet-300',
+  self_care: 'text-fuchsia-600 dark:text-fuchsia-300',
 };
 
 const PERIOD_OPTIONS = ['Morning', 'Afternoon', 'Evening', 'Night'];
 
 type RoutineForm = {
   title: string;
-  category: string;
+  parent_tag: string;
+  sub_tag: string;
   time_block: string;
   priority: 'urgent' | 'important' | 'low';
   repeat_rule: 'daily' | 'weekdays' | 'weekly' | 'once';
   reminder_enabled: boolean;
+  time_tracking_enabled: boolean;
+  item_type: 'simple' | 'measurable';
+  target_value: string;
+  target_unit: string;
+  tolerance_value: string;
 };
 
 const initialForm: RoutineForm = {
   title: '',
-  category: 'health',
+  parent_tag: 'Health',
+  sub_tag: '',
   time_block: '',
   priority: 'important',
   repeat_rule: 'daily',
   reminder_enabled: false,
+  time_tracking_enabled: false,
+  item_type: 'simple',
+  target_value: '',
+  target_unit: '',
+  tolerance_value: '',
 };
 
 export default function TodayPage() {
   const today = useToday();
   const setDone = useSetRoutineDone();
+  const updateItem = useUpdateRoutineItem();
+  const startTimer = useStartRoutineTimer();
+  const stopTimer = useStopRoutineTimer();
   const saveCheckIn = useSaveScreenCheckIn();
   const deleteCheckIn = useDeleteScreenCheckIn();
   const createItem = useCreateRoutineItem();
   const deleteItem = useDeleteRoutineItem();
-  const reminderDigest = useSendReminderDigest();
   const lifestyle = useLifestyleToday();
   const [form, setForm] = useState<RoutineForm>(initialForm);
   const [showCheckInForm, setShowCheckInForm] = useState(false);
@@ -60,6 +75,7 @@ export default function TodayPage() {
   const [contentType, setContentType] = useState('reel_short');
   const [titleNote, setTitleNote] = useState('');
   const [stoppedAt, setStoppedAt] = useState('');
+  const [tagFilter, setTagFilter] = useState('all');
 
   const screenItem = useMemo(
     () => today.data?.items.find((item) => item.type === 'screen_checkin'),
@@ -68,10 +84,23 @@ export default function TodayPage() {
 
   const completeCount = today.data?.items.filter((item) => item.is_done).length ?? 0;
   const totalCount = today.data?.items.length ?? 0;
+  const routineItems = useMemo(() => today.data?.items.filter((item) => item.type === 'routine') ?? [], [today.data]);
+  const tagOptions = useMemo(() => Array.from(new Set(routineItems.map((item) => item.parent_tag ?? item.category).filter(Boolean))), [routineItems]);
+  const filteredRoutineItems = routineItems.filter((item) => tagFilter === 'all' || (item.parent_tag ?? item.category) === tagFilter);
 
   async function submitRoutine(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await createItem.mutateAsync({ ...form, time_block: form.time_block || null });
+    const parentTag = form.parent_tag.trim();
+    await createItem.mutateAsync({
+      ...form,
+      category: parentTag,
+      parent_tag: parentTag,
+      sub_tag: form.sub_tag.trim() || null,
+      time_block: form.time_block || null,
+      target_value: form.target_value ? Number(form.target_value) : null,
+      target_unit: form.target_unit.trim() || null,
+      tolerance_value: form.tolerance_value ? Number(form.tolerance_value) : null,
+    });
     setForm(initialForm);
   }
 
@@ -234,21 +263,35 @@ export default function TodayPage() {
           ) : null}
 
           <section className="app-card mb-4 p-4 sm:mb-6 sm:p-5">
-            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <h2 className="text-xl font-black">Time-blocked routine</h2>
-              <button onClick={() => reminderDigest.mutate(today.data.date)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-900">
-                <Send className="h-4 w-4" />
-                Send digest
-              </button>
+              <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-xl font-black">Time-blocked routine</h2>
+                <p className={clsx('mt-1 text-sm', today.data.reminders.configured ? 'text-emerald-600 dark:text-emerald-300' : 'text-amber-600 dark:text-amber-300')}>
+                  Reminders {today.data.reminders.configured ? 'are configured for automatic delivery.' : `need SMTP setup (${today.data.reminders.missing.join(', ') || 'missing config'}).`}
+                </p>
+              </div>
             </div>
             <div className="space-y-3">
-              {today.data.items.filter((item) => item.type === 'routine').map((item) => (
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => setTagFilter('all')} className={clsx('rounded-full px-3 py-2 text-xs font-bold ring-1', tagFilter === 'all' ? 'bg-slate-950 text-white ring-slate-950 dark:bg-white dark:text-slate-950 dark:ring-white' : 'bg-white text-slate-600 ring-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:ring-slate-800')}>All</button>
+                {tagOptions.map((tag) => (
+                  <button key={tag} type="button" onClick={() => setTagFilter(tag)} className={clsx('rounded-full px-3 py-2 text-xs font-bold ring-1', tagFilter === tag ? 'bg-slate-950 text-white ring-slate-950 dark:bg-white dark:text-slate-950 dark:ring-white' : 'bg-white text-slate-600 ring-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:ring-slate-800')}>{tag}</button>
+                ))}
+              </div>
+              {filteredRoutineItems.map((item) => (
                 <RoutineRow
                   key={item.id}
                   item={item}
                   onDone={() => setDone.mutate({ id: item.id, payload: { is_done: !item.is_done, date: today.data.date } })}
+                  onStatus={(status) => setDone.mutate({ id: item.id, payload: { status, date: today.data.date } })}
+                  onPriority={(priority) => updateItem.mutate({ id: item.id, payload: { priority } })}
+                  onReminderToggle={() => updateItem.mutate({ id: item.id, payload: { reminder_enabled: !item.reminder_enabled } })}
+                  onStartTimer={() => startTimer.mutate({ id: item.id, date: today.data.date })}
+                  onStopTimer={() => stopTimer.mutate({ id: item.id, date: today.data.date })}
+                  onManualMinutes={(minutes) => setDone.mutate({ id: item.id, payload: { duration_minutes: minutes, date: today.data.date } })}
+                  onActualValue={(actual_value) => setDone.mutate({ id: item.id, payload: { actual_value, status: 'done', date: today.data.date } })}
                   onDelete={() => deleteItem.mutate(item.id)}
-                  busy={setDone.isPending || deleteItem.isPending}
+                  busy={setDone.isPending || deleteItem.isPending || updateItem.isPending || startTimer.isPending || stopTimer.isPending}
                 />
               ))}
             </div>
@@ -256,7 +299,8 @@ export default function TodayPage() {
 
           <form onSubmit={submitRoutine} className="app-card grid gap-3 p-4 sm:p-5 md:grid-cols-6">
             <input value={form.title} onChange={(e) => setForm((c) => ({ ...c, title: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800 md:col-span-2" placeholder="Routine item" required />
-            <input value={form.category} onChange={(e) => setForm((c) => ({ ...c, category: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Category" required />
+            <input value={form.parent_tag} onChange={(e) => setForm((c) => ({ ...c, parent_tag: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Parent tag" required />
+            <input value={form.sub_tag} onChange={(e) => setForm((c) => ({ ...c, sub_tag: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Sub-tag optional" />
             <TimePicker value={form.time_block} onChange={(v) => setForm((c) => ({ ...c, time_block: v }))} />
             <select value={form.priority} onChange={(e) => setForm((c) => ({ ...c, priority: e.target.value as RoutineForm['priority'] }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
               <option value="urgent">Urgent</option>
@@ -273,7 +317,22 @@ export default function TodayPage() {
               <input type="checkbox" checked={form.reminder_enabled} onChange={(e) => setForm((c) => ({ ...c, reminder_enabled: e.target.checked }))} />
               Reminder
             </label>
-            <button disabled={createItem.isPending} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300 md:col-span-5">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm dark:border-slate-800">
+              <input type="checkbox" checked={form.time_tracking_enabled} onChange={(e) => setForm((c) => ({ ...c, time_tracking_enabled: e.target.checked }))} />
+              Track time
+            </label>
+            <select value={form.item_type} onChange={(e) => setForm((c) => ({ ...c, item_type: e.target.value as RoutineForm['item_type'] }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800">
+              <option value="simple">Simple</option>
+              <option value="measurable">Measurable</option>
+            </select>
+            {form.item_type === 'measurable' ? (
+              <>
+                <input type="number" min="0" step="0.01" value={form.target_value} onChange={(e) => setForm((c) => ({ ...c, target_value: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Target" />
+                <input value={form.target_unit} onChange={(e) => setForm((c) => ({ ...c, target_unit: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Unit" />
+                <input type="number" min="0" step="0.01" value={form.tolerance_value} onChange={(e) => setForm((c) => ({ ...c, tolerance_value: e.target.value }))} className="rounded-lg border border-slate-200 bg-transparent px-4 py-3 text-sm dark:border-slate-800" placeholder="Tolerance" />
+              </>
+            ) : null}
+            <button disabled={createItem.isPending} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300 md:col-span-6">
               <Plus className="h-4 w-4" />
               Add routine item
             </button>
@@ -284,7 +343,36 @@ export default function TodayPage() {
   );
 }
 
-function RoutineRow({ item, onDone, onDelete, busy }: { item: TodayRoutineItem; onDone: () => void; onDelete: () => void; busy: boolean }) {
+function RoutineRow({
+  item,
+  onDone,
+  onStatus,
+  onPriority,
+  onReminderToggle,
+  onStartTimer,
+  onStopTimer,
+  onManualMinutes,
+  onActualValue,
+  onDelete,
+  busy,
+}: {
+  item: TodayRoutineItem;
+  onDone: () => void;
+  onStatus: (status: string) => void;
+  onPriority: (priority: TodayRoutineItem['priority']) => void;
+  onReminderToggle: () => void;
+  onStartTimer: () => void;
+  onStopTimer: () => void;
+  onManualMinutes: (minutes: number) => void;
+  onActualValue: (actualValue: number) => void;
+  onDelete: () => void;
+  busy: boolean;
+}) {
+  const [manualMinutes, setManualMinutes] = useState(item.duration_minutes?.toString() ?? '');
+  const [actualValue, setActualValue] = useState(item.actual_value?.toString() ?? '');
+  const elapsed = useElapsedMinutes(item.timer_started_at);
+  const tag = [item.parent_tag ?? item.category, item.sub_tag].filter(Boolean).join(' / ');
+
   return (
     <article className={clsx('flex flex-col gap-4 rounded-2xl border p-3 sm:p-4 md:flex-row md:items-center md:justify-between', item.is_done ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20' : 'border-black/10 bg-white/70 dark:border-white/10 dark:bg-slate-950/50')}>
       <div className="flex items-start gap-3">
@@ -295,25 +383,83 @@ function RoutineRow({ item, onDone, onDelete, busy }: { item: TodayRoutineItem; 
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-bold">{item.title}</h3>
             <span className={clsx('inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold ring-1', priorityClass[item.priority])}>{item.priority}</span>
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600 dark:bg-slate-900 dark:text-slate-300">{item.status.replace('_', ' ')}</span>
             {item.overdue ? <span className="rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white">overdue</span> : null}
           </div>
-          <p className={clsx('mt-1 text-sm', categoryClass[item.category] ?? 'text-slate-500 dark:text-slate-400')}>{item.category} / {item.repeat_rule}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+            <span className={clsx(categoryClass[item.category] ?? 'text-slate-500 dark:text-slate-400')}>
+              {tag} / {item.repeat_rule}
+            </span>
+            {item.source === 'care_task' && item.plan_id ? (
+              <Link href={`/self-care/${item.plan_id}`} className="font-semibold text-fuchsia-600 hover:text-fuchsia-700 dark:text-fuchsia-300 dark:hover:text-fuchsia-200">
+                Open
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        <select value={item.status} onChange={(event) => onStatus(event.target.value)} disabled={busy} className="rounded-2xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800">
+          <option value="not_started">Not started</option>
+          <option value="done">Done</option>
+          <option value="failed">Failed</option>
+          <option value="skipped">Skipped</option>
+        </select>
+        <select value={item.priority} onChange={(event) => onPriority(event.target.value as TodayRoutineItem['priority'])} disabled={busy} className="rounded-2xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800">
+          <option value="urgent">Urgent</option>
+          <option value="important">Important</option>
+          <option value="low">Low</option>
+        </select>
         {item.time_block ? (
           <span className="tap-target inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
             <Clock className="h-4 w-4" />
             {item.time_block}
           </span>
         ) : null}
-        <span title={item.reminder_enabled ? 'Reminder enabled' : 'Reminder off'} className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
+        {item.item_type === 'measurable' ? (
+          <form onSubmit={(event) => { event.preventDefault(); if (actualValue) onActualValue(Number(actualValue)); }} className="flex items-center gap-1">
+            <input type="number" min="0" step="0.01" value={actualValue} onChange={(event) => setActualValue(event.target.value)} className="w-24 rounded-2xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" placeholder={item.target_unit ?? 'actual'} />
+            <button disabled={busy || !actualValue} title="Save actual value" className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
+              <Save className="h-4 w-4" />
+            </button>
+          </form>
+        ) : null}
+        {item.time_tracking_enabled ? (
+          <div className="flex flex-wrap items-center gap-1">
+            <button onClick={item.timer_started_at ? onStopTimer : onStartTimer} disabled={busy} title={item.timer_started_at ? 'Stop timer' : 'Start timer'} className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
+              {item.timer_started_at ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </button>
+            <span className="rounded-2xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
+              {item.timer_started_at ? `${elapsed} min` : `${item.duration_minutes ?? 0} min`}
+            </span>
+            <form onSubmit={(event) => { event.preventDefault(); if (manualMinutes) onManualMinutes(Number(manualMinutes)); }} className="flex items-center gap-1">
+              <input type="number" min="0" value={manualMinutes} onChange={(event) => setManualMinutes(event.target.value)} className="w-20 rounded-2xl border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-800" placeholder="min" />
+              <button disabled={busy || !manualMinutes} title="Save manual minutes" className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
+                <TimerReset className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+        ) : null}
+        <button onClick={onReminderToggle} disabled={busy} title={item.reminder_enabled ? 'Reminder enabled' : 'Reminder off'} className="tap-target inline-flex items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800">
           {item.reminder_enabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-        </span>
+        </button>
         <button onClick={onDelete} disabled={busy} title="Delete routine item" className="tap-target inline-flex items-center justify-center rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40">
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
     </article>
   );
+}
+
+function useElapsedMinutes(startedAt: string | null) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!startedAt) return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [startedAt]);
+
+  if (!startedAt) return 0;
+  return Math.max(0, Math.round((now - new Date(startedAt).getTime()) / 60000));
 }

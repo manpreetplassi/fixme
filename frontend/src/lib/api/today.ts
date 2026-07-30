@@ -7,13 +7,30 @@ export type TodayRoutineItem = {
   type: 'routine' | 'screen_checkin';
   title: string;
   category: string;
+  parent_tag: string | null;
+  sub_tag: string | null;
   time_block: string | null;
   priority: 'urgent' | 'important' | 'low';
   repeat_rule: string;
+  scheduled_date: string | null;
+  item_type: 'simple' | 'measurable' | string;
+  target_value: number | null;
+  target_unit: string | null;
+  tolerance_value: number | null;
   reminder_enabled: boolean;
+  reminder_trigger_type: 'time' | 'after_item' | 'check_in' | string;
+  reminder_trigger_item_id: string | null;
+  time_tracking_enabled: boolean;
   status: 'not_started' | 'done' | 'completed' | 'failed' | 'skipped' | string;
   points: number;
+  source?: string;
+  plan_id?: string | null;
+  icon?: string | null;
   points_earned: number;
+  score: number | null;
+  duration_minutes: number | null;
+  timer_started_at: string | null;
+  actual_value: number | null;
   linked_money_entry_id: string | null;
   is_done: boolean;
   overdue: boolean;
@@ -46,6 +63,11 @@ export type TodayResponse = {
   items: TodayRoutineItem[];
   overdue: TodayRoutineItem[];
   screen: ScreenSummary;
+  reminders: {
+    configured: boolean;
+    missing: string[];
+    override_recipient_configured: boolean;
+  };
 };
 
 export async function getToday(date?: string): Promise<TodayResponse> {
@@ -68,8 +90,18 @@ export async function deleteRoutineItem(id: string) {
   return response.data.data;
 }
 
-export async function setRoutineDone(id: string, payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; rating?: number | null; linked_money_entry_id?: string | null }) {
+export async function setRoutineDone(id: string, payload: { is_done?: boolean; status?: string; date?: string; note?: string; points_earned?: number; duration_minutes?: number | null; actual_value?: number | null; score?: number | null; rating?: number | null; linked_money_entry_id?: string | null }) {
   const response = await apiClient.post(`/today/items/${id}/done`, payload);
+  return response.data.data;
+}
+
+export async function startRoutineTimer(id: string, date?: string) {
+  const response = await apiClient.post(`/today/items/${id}/timer/start`, { date });
+  return response.data.data;
+}
+
+export async function stopRoutineTimer(id: string, date?: string) {
+  const response = await apiClient.post(`/today/items/${id}/timer/stop`, { date });
   return response.data.data;
 }
 
@@ -90,5 +122,10 @@ export async function getScreenSummary(date?: string): Promise<ScreenSummary> {
 
 export async function sendReminderDigest(date?: string) {
   const response = await apiClient.post('/today/reminders/digest', null, { params: date ? { date } : undefined });
+  return response.data.data;
+}
+
+export async function getReminderStatus(): Promise<TodayResponse['reminders']> {
+  const response = await apiClient.get('/today/reminders/status');
   return response.data.data;
 }
