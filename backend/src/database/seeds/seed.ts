@@ -2,7 +2,6 @@ import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { CareArea } from '../../self-care/entities/care-area.entity';
 import { CareTask } from '../../self-care/entities/care-task.entity';
-import { DailyTask } from '../../daily-tasks/entities/daily-task.entity';
 import { Hobby } from '../../hobbies/entities/hobby.entity';
 import { Solution } from '../../solutions-bank/entities/solution.entity';
 import { User } from '../../users/entities/user.entity';
@@ -10,7 +9,6 @@ import { AppDataSource } from '../data-source';
 
 export async function runSeed(dataSource: DataSource): Promise<void> {
   const userRepo = dataSource.getRepository(User);
-  const taskRepo = dataSource.getRepository(DailyTask);
   const hobbyRepo = dataSource.getRepository(Hobby);
   const solutionRepo = dataSource.getRepository(Solution);
   const careAreaRepo = dataSource.getRepository(CareArea);
@@ -26,27 +24,6 @@ export async function runSeed(dataSource: DataSource): Promise<void> {
         bio: 'Demo account for local development',
         preferred_hobbies: ['Dance Practice', 'Bike Ride'],
       }),
-    );
-  }
-
-  const tasksCount = await taskRepo.count();
-  if (tasksCount === 0) {
-    await taskRepo.save(
-      taskRepo.create([
-        { name: 'Wake at 6 AM', day_type: 'weekday', priority: 'critical', points: 15, category: 'health', icon: 'sunrise', display_order: 1 },
-        { name: 'Sleep by 11 PM', day_type: 'weekday', priority: 'critical', points: 15, category: 'health', icon: 'moon', display_order: 2 },
-        { name: 'No Junk Food', day_type: 'weekday', priority: 'critical', points: 12, category: 'habits', icon: 'utensils', display_order: 3, max_cheats_per_week: 2 },
-        { name: 'No Masturbation', day_type: 'weekday', priority: 'critical', points: 20, category: 'habits', icon: 'zap', display_order: 4 },
-        { name: 'Exercise 1 Hour', day_type: 'weekday', priority: 'high', points: 10, category: 'health', icon: 'activity', display_order: 5 },
-        { name: 'Learn Something', day_type: 'weekday', priority: 'high', points: 8, category: 'learning', icon: 'book-open', display_order: 6 },
-        { name: 'Instagram 15 mins', day_type: 'weekday', priority: 'low', points: 3, category: 'habits', icon: 'smartphone', display_order: 7 },
-        { name: 'No Movies', day_type: 'weekday', priority: 'low', points: 2, category: 'habits', icon: 'film', display_order: 8 },
-        { name: 'Wake at 7 AM', day_type: 'weekend', priority: 'critical', points: 12, category: 'health', icon: 'sunrise', display_order: 9 },
-        { name: 'Sleep by 11:30 PM', day_type: 'weekend', priority: 'critical', points: 12, category: 'health', icon: 'moon', display_order: 10 },
-        { name: 'Hobby Practice', day_type: 'weekend', priority: 'medium', points: 6, category: 'habits', icon: 'palette', display_order: 11 },
-        { name: 'Bike/Activity', day_type: 'weekend', priority: 'medium', points: 8, category: 'health', icon: 'bike', display_order: 12 },
-        { name: 'Eat Homemade Food', day_type: 'travel', priority: 'critical', points: 10, category: 'health', icon: 'salad', display_order: 13 },
-      ]),
     );
   }
 

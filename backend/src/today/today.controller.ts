@@ -18,6 +18,12 @@ export class TodayController {
     return this.service.getToday(user, date);
   }
 
+  @Get('score/today')
+  @ApiOperation({ summary: "Get today's unified routine score summary" })
+  getTodayScore(@CurrentUser() user: User, @Query('date') date?: string) {
+    return this.service.getTodayScore(user, date);
+  }
+
   @Post('items')
   @ApiOperation({ summary: 'Create routine item' })
   createItem(@CurrentUser() user: User, @Body() dto: CreateRoutineItemDto) {

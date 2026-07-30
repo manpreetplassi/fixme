@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DailyLogsService } from '../daily-logs/daily-logs.service';
+import { TodayService } from '../today/today.service';
 import { User } from '../users/entities/user.entity';
 import { CreateReflectionDto, UpdateReflectionDto } from './dto/reflection.dto';
 import { Reflection } from './entities/reflection.entity';
@@ -10,12 +10,12 @@ import { Reflection } from './entities/reflection.entity';
 export class ReflectionsService {
   constructor(
     @InjectRepository(Reflection) private readonly repo: Repository<Reflection>,
-    private readonly dailyLogsService: DailyLogsService,
+    private readonly todayService: TodayService,
   ) {}
 
   async create(user: User, dto: CreateReflectionDto) {
     const today = new Date().toISOString().slice(0, 10);
-    const score = await this.dailyLogsService.getTodayScore(user.id, today);
+    const score = await this.todayService.getTodayScore(user, today);
 
     const reflection = this.repo.create({
       user,

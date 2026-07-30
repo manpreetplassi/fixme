@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DailyLogsModule } from '../daily-logs/daily-logs.module';
+import { TodayModule } from '../today/today.module';
 import { Reflection } from './entities/reflection.entity';
 import { ReflectionsController } from './reflections.controller';
 import { ReflectionsService } from './reflections.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Reflection]), DailyLogsModule],
+  imports: [TypeOrmModule.forFeature([Reflection]), TodayModule],
   controllers: [ReflectionsController],
   providers: [ReflectionsService],
   exports: [ReflectionsService],

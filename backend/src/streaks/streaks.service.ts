@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DailyLog } from '../daily-logs/entities/daily-log.entity';
+import { RoutineCompletion } from '../today/entities/routine-completion.entity';
 import { Streak } from './entities/streak.entity';
 
 const TRACKED_HABITS = [
@@ -16,7 +16,7 @@ const TRACKED_HABITS = [
 export class StreaksService {
   constructor(
     @InjectRepository(Streak) private readonly repo: Repository<Streak>,
-    @InjectRepository(DailyLog) private readonly logRepo: Repository<DailyLog>,
+    @InjectRepository(RoutineCompletion) private readonly completionRepo: Repository<RoutineCompletion>,
   ) {}
 
   findAll(userId: string): Promise<Streak[]> {
@@ -24,53 +24,54 @@ export class StreaksService {
   }
 
   async refreshUserStreaks(userId: string): Promise<void> {
-    const logs = await this.logRepo.find({
+    const completions = await this.completionRepo.find({
       where: { user: { id: userId } },
-      order: { log_date: 'DESC' },
+      relations: { routine_item: true },
+      order: { completion_date: 'DESC' },
       take: 180,
     });
 
     for (const track of TRACKED_HABITS) {
-      const habitLogs = logs
-        .filter((log) => log.task.name.toLowerCase() === track.habitName.toLowerCase())
-        .sort((a, b) => a.log_date.localeCompare(b.log_date));
+      const habitLogs = completions
+        .filter((completion) => completion.routine_item?.title.toLowerCase() === track.habitName.toLowerCase())
+        .sort((a, b) => a.completion_date.localeCompare(b.completion_date));
 
       let currentCount = 0;
       let bestCount = 0;
       let tempCount = 0;
-      let startDate = habitLogs[0]?.log_date ?? new Date().toISOString().slice(0, 10);
+      let startDate = habitLogs[0]?.completion_date ?? new Date().toISOString().slice(0, 10);
       let lastCompletedDate: string | null = null;
 
       for (const log of habitLogs) {
-        if (log.status !== 'completed') {
+        if (!this.isDoneStatus(log.status)) {
           tempCount = 0;
           continue;
         }
 
         if (!lastCompletedDate) {
           tempCount = 1;
-          startDate = log.log_date;
-        } else if (this.daysBetween(lastCompletedDate, log.log_date) === 1) {
+          startDate = log.completion_date;
+        } else if (this.daysBetween(lastCompletedDate, log.completion_date) === 1) {
           tempCount += 1;
         } else {
           tempCount = 1;
-          startDate = log.log_date;
+          startDate = log.completion_date;
         }
 
-        lastCompletedDate = log.log_date;
+        lastCompletedDate = log.completion_date;
         bestCount = Math.max(bestCount, tempCount);
       }
 
-      const descendingLogs = [...habitLogs].sort((a, b) => b.log_date.localeCompare(a.log_date));
+      const descendingLogs = [...habitLogs].sort((a, b) => b.completion_date.localeCompare(a.completion_date));
       for (let index = 0; index < descendingLogs.length; index += 1) {
         const log = descendingLogs[index];
-        if (log.status !== 'completed') break;
+        if (!this.isDoneStatus(log.status)) break;
         if (index === 0) {
           currentCount = 1;
           continue;
         }
         const previous = descendingLogs[index - 1];
-        if (this.daysBetween(log.log_date, previous.log_date) === 1) {
+        if (this.daysBetween(log.completion_date, previous.completion_date) === 1) {
           currentCount += 1;
         } else {
           break;
@@ -100,5 +101,9 @@ export class StreaksService {
     const a = new Date(dateA).getTime();
     const b = new Date(dateB).getTime();
     return Math.abs(Math.round((a - b) / 86_400_000));
+  }
+
+  private isDoneStatus(status: string): boolean {
+    return status === 'done' || status === 'completed';
   }
 }

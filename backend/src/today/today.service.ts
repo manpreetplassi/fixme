@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, OnModuleDestroy, OnModuleInit } from '@n
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, IsNull, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { StreaksService } from '../streaks/streaks.service';
 import { CreateRoutineItemDto, ScreenCheckInDto, SetRoutineDoneDto, UpdateRoutineItemDto } from './dto/today.dto';
 import { RoutineCompletion } from './entities/routine-completion.entity';
 import { RoutineItem } from './entities/routine-item.entity';
@@ -24,6 +25,7 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(ScreenCheckIn) private readonly screenRepo: Repository<ScreenCheckIn>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly reminders: TodayRemindersService,
+    private readonly streaksService: StreaksService,
   ) {}
 
   onModuleInit() {
@@ -232,6 +234,38 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
     return this.reminders.getDeliveryStatus();
   }
 
+  async getTodayScore(user: User, date = this.todayString()) {
+    await this.ensureStarterRoutine(user);
+    const completions = await this.completionRepo.find({
+      where: { user: { id: user.id }, completion_date: date },
+      relations: { routine_item: true },
+    });
+    const routineCompletions = completions.filter((completion) => completion.routine_item);
+    const completedTasks = routineCompletions.filter((completion) => this.isDoneStatus(completion.status));
+    const failedTasks = routineCompletions.filter((completion) => completion.status === 'failed' || completion.status === 'cheated');
+    const baseScore = completedTasks.reduce((sum, completion) => sum + Number(completion.points_earned ?? 0), 0);
+
+    const sleepMissed = routineCompletions.some((completion) => this.titleIncludes(completion, 'sleep') && !this.isDoneStatus(completion.status));
+    const masturbationLogged = routineCompletions.some((completion) => this.titleIncludes(completion, 'masturbation') && !this.isDoneStatus(completion.status));
+    const junkFoodLogged = routineCompletions.some((completion) => this.titleIncludes(completion, 'junk food') && !this.isDoneStatus(completion.status));
+
+    let modifier = 1;
+    if (sleepMissed) modifier -= 0.2;
+    if (masturbationLogged) modifier -= 0.15;
+    if (junkFoodLogged) modifier -= 0.1;
+
+    const criticalTasks = routineCompletions.filter((completion) => completion.routine_item?.priority === 'urgent');
+    const allCriticalDone = criticalTasks.length > 0 && criticalTasks.every((completion) => this.isDoneStatus(completion.status));
+
+    return {
+      date,
+      dailyScore: Math.max(0, Math.round(baseScore * modifier + (allCriticalDone ? 10 : 0))),
+      tasksCompleted: completedTasks.length,
+      tasksFailed: failedTasks.length,
+      streakUpdate: await this.streaksService.findAll(user.id),
+    };
+  }
+
   private async ensureStarterRoutine(user: User) {
     const count = await this.routineRepo.count({ where: { user: { id: user.id } } });
     if (count > 0) return;
@@ -398,6 +432,10 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
   private calculatePoints(item: RoutineItem, score: number | null) {
     if (score === null) return 0;
     return Math.round((item.points * score) / 10);
+  }
+
+  private titleIncludes(completion: RoutineCompletion, text: string) {
+    return completion.routine_item?.title.toLowerCase().includes(text) ?? false;
   }
 
   private isOverdue(timeBlock: string | null, isDone: boolean, date: string) {

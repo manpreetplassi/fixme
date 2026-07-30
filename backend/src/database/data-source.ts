@@ -1,8 +1,6 @@
 import 'reflect-metadata';
 import { config as loadEnv } from 'dotenv';
 import { DataSource } from 'typeorm';
-import { DailyLog } from '../daily-logs/entities/daily-log.entity';
-import { DailyTask } from '../daily-tasks/entities/daily-task.entity';
 import { HobbyLog } from '../hobbies/entities/hobby-log.entity';
 import { Hobby } from '../hobbies/entities/hobby.entity';
 import { LearningLog } from '../learning-logs/entities/learning-log.entity';
@@ -29,7 +27,7 @@ loadEnv();
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: getDatabaseUrlFromEnv(),
-  entities: [User, DailyTask, DailyLog, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn, LifestyleDay, MealEntry, MealTemplate, LifestyleActivity, CareArea, CareTask],
+  entities: [User, Hobby, HobbyLog, LearningLog, Reflection, Reel, MoneyEntry, Solution, Streak, RoutineItem, RoutineCompletion, ScreenCheckIn, LifestyleDay, MealEntry, MealTemplate, LifestyleActivity, CareArea, CareTask],
   migrations,
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });

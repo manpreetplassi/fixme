@@ -70,8 +70,21 @@ export type TodayResponse = {
   };
 };
 
+export type TodayScoreResponse = {
+  date: string;
+  dailyScore: number;
+  tasksCompleted: number;
+  tasksFailed: number;
+  streakUpdate: unknown[];
+};
+
 export async function getToday(date?: string): Promise<TodayResponse> {
   const response = await apiClient.get('/today', { params: date ? { date } : undefined });
+  return response.data.data;
+}
+
+export async function getTodayScore(date?: string): Promise<TodayScoreResponse> {
+  const response = await apiClient.get('/today/score/today', { params: date ? { date } : undefined });
   return response.data.data;
 }
 

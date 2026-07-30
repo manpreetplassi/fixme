@@ -5,8 +5,6 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { getDatabaseUrl } from './database/database-url';
 import { migrations } from './database/migrations';
-import { DailyLogsModule } from './daily-logs/daily-logs.module';
-import { DailyTasksModule } from './daily-tasks/daily-tasks.module';
 import { GeminiModule } from './gemini/gemini.module';
 import { HealthModule } from './health/health.module';
 import { HobbiesModule } from './hobbies/hobbies.module';
@@ -37,8 +35,6 @@ import { UsersModule } from './users/users.module';
     }),
     UsersModule,
     AuthModule,
-    DailyTasksModule,
-    DailyLogsModule,
     StreaksModule,
     TodayModule,
     HealthModule,

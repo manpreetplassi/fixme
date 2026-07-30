@@ -14,10 +14,10 @@ function repo<T>(items: T[]): FakeRepository<T> {
 
 async function testWeeklyAnalytics(): Promise<void> {
   const logs = [
-    { log_date: '2026-07-17', points_earned: 10, status: 'completed' },
-    { log_date: '2026-07-17', points_earned: 5, status: 'completed' },
-    { log_date: '2026-07-16', points_earned: 2, status: 'failed' },
-    { log_date: '2026-07-15', points_earned: 8, status: 'cheated' },
+    { completion_date: '2026-07-17', points_earned: 10, status: 'done' },
+    { completion_date: '2026-07-17', points_earned: 5, status: 'completed' },
+    { completion_date: '2026-07-16', points_earned: 2, status: 'failed' },
+    { completion_date: '2026-07-15', points_earned: 8, status: 'cheated' },
   ];
   const reflections = [
     { reflection_date: '2026-07-17', masturbation_happened: true, primary_blocker: 'stress' },

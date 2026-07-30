@@ -7,9 +7,10 @@ import { TodayController } from './today.controller';
 import { TodayRemindersService } from './today-reminders.service';
 import { TodayService } from './today.service';
 import { User } from '../users/entities/user.entity';
+import { StreaksModule } from '../streaks/streaks.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RoutineItem, RoutineCompletion, ScreenCheckIn, User])],
+  imports: [TypeOrmModule.forFeature([RoutineItem, RoutineCompletion, ScreenCheckIn, User]), StreaksModule],
   controllers: [TodayController],
   providers: [TodayService, TodayRemindersService],
   exports: [TodayService],

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRoutineItem, deleteRoutineItem, deleteScreenCheckIn, getReminderStatus, getScreenSummary, getToday, saveScreenCheckIn, sendReminderDigest, setRoutineDone, startRoutineTimer, stopRoutineTimer, updateRoutineItem } from '@/lib/api/today';
+import { createRoutineItem, deleteRoutineItem, deleteScreenCheckIn, getReminderStatus, getScreenSummary, getToday, getTodayScore, saveScreenCheckIn, sendReminderDigest, setRoutineDone, startRoutineTimer, stopRoutineTimer, updateRoutineItem } from '@/lib/api/today';
 
 export function useToday(date?: string) {
   return useQuery({
@@ -14,6 +14,13 @@ export function useScreenSummary(date?: string) {
   return useQuery({
     queryKey: ['screen-summary', date],
     queryFn: () => getScreenSummary(date),
+  });
+}
+
+export function useTodayScore(date?: string) {
+  return useQuery({
+    queryKey: ['today-score', date],
+    queryFn: () => getTodayScore(date),
   });
 }
 

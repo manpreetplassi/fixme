@@ -88,7 +88,7 @@ Use this file as the task runner.
 - [x] Update today service/controller/DTOs to use routine completion status, points, and linked money fields.
 - [x] Cut frontend `/tracker` over to routine_items/routine_completions via today endpoints.
 - [x] Repurpose `/tracker` nav tab into a read-only History view for past routine completions.
-- [ ] Retire daily-tasks/daily-logs backend modules and remove them from app.module.ts after cutover verification.
+- [x] Retire daily-tasks/daily-logs backend modules and remove them from app.module.ts after cutover verification.
 
 ## Phase 6 - Fix known bugs and UI inconsistencies
 

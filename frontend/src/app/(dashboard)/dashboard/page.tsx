@@ -2,9 +2,8 @@
 
 import clsx from 'clsx';
 import { PageHeader } from '@/components/layout/page-header';
-import { useTodayScore } from '@/hooks/use-daily-logs';
 import { useWeeklyAnalytics } from '@/hooks/use-analytics';
-import { useScreenSummary } from '@/hooks/use-today';
+import { useScreenSummary, useTodayScore } from '@/hooks/use-today';
 import { useLifestyleAnalytics } from '@/hooks/use-lifestyle';
 
 export default function DashboardPage() {
