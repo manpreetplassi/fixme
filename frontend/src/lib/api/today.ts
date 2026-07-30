@@ -4,7 +4,7 @@ import { apiClient } from './client';
 
 export type TodayRoutineItem = {
   id: string;
-  type: 'routine' | 'screen_checkin';
+  type: 'routine' | 'screen_checkin' | 'lifestyle_activity' | 'learning_log';
   title: string;
   category: string;
   parent_tag: string | null;
@@ -36,6 +36,7 @@ export type TodayRoutineItem = {
   overdue: boolean;
   period?: string;
   check_in?: ScreenCheckIn | null;
+  note?: string | null;
 };
 
 export type ScreenCheckIn = {

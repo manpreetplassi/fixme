@@ -99,9 +99,9 @@ export default function TodayPage() {
 
   const completeCount = today.data?.items.filter((item) => item.is_done).length ?? 0;
   const totalCount = today.data?.items.length ?? 0;
-  const routineItems = useMemo(() => today.data?.items.filter((item) => item.type === 'routine') ?? [], [today.data]);
-  const tagOptions = useMemo(() => Array.from(new Set(routineItems.map((item) => item.parent_tag ?? item.category).filter(Boolean))), [routineItems]);
-  const filteredRoutineItems = routineItems.filter((item) => tagFilter === 'all' || (item.parent_tag ?? item.category) === tagFilter);
+  const taskItems = useMemo(() => today.data?.items.filter((item) => item.type !== 'screen_checkin') ?? [], [today.data]);
+  const tagOptions = useMemo(() => Array.from(new Set(taskItems.map((item) => item.parent_tag ?? item.category).filter(Boolean))), [taskItems]);
+  const filteredTaskItems = taskItems.filter((item) => tagFilter === 'all' || (item.parent_tag ?? item.category) === tagFilter);
   const needsScheduleDate = form.repeat_rule === 'once' || form.repeat_rule === 'weekly';
   const canCreateRoutine =
     Boolean(form.title.trim()) &&
@@ -309,21 +309,25 @@ export default function TodayPage() {
                   <button key={tag} type="button" onClick={() => setTagFilter(tag)} className={clsx('rounded-full px-3 py-2 text-xs font-bold ring-1', tagFilter === tag ? 'bg-slate-950 text-white ring-slate-950 dark:bg-white dark:text-slate-950 dark:ring-white' : 'bg-white text-slate-600 ring-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:ring-slate-800')}>{tag}</button>
                 ))}
               </div>
-              {filteredRoutineItems.map((item) => (
-                <RoutineRow
-                  key={item.id}
-                  item={item}
-                  onDone={() => setDone.mutate({ id: item.id, payload: { is_done: !item.is_done, date: today.data.date } })}
-                  onStatus={(status) => setDone.mutate({ id: item.id, payload: { status, date: today.data.date } })}
-                  onPriority={(priority) => updateItem.mutate({ id: item.id, payload: { priority } })}
-                  onReminderToggle={() => updateItem.mutate({ id: item.id, payload: { reminder_enabled: !item.reminder_enabled } })}
-                  onStartTimer={() => startTimer.mutate({ id: item.id, date: today.data.date })}
-                  onStopTimer={() => stopTimer.mutate({ id: item.id, date: today.data.date })}
-                  onManualMinutes={(minutes) => setDone.mutate({ id: item.id, payload: { duration_minutes: minutes, date: today.data.date } })}
-                  onActualValue={(actual_value) => setDone.mutate({ id: item.id, payload: { actual_value, status: 'done', date: today.data.date } })}
-                  onDelete={() => deleteItem.mutate(item.id)}
-                  busy={setDone.isPending || deleteItem.isPending || updateItem.isPending || startTimer.isPending || stopTimer.isPending}
-                />
+              {filteredTaskItems.map((item) => (
+                item.type === 'routine' ? (
+                  <RoutineRow
+                    key={item.id}
+                    item={item}
+                    onDone={() => setDone.mutate({ id: item.id, payload: { is_done: !item.is_done, date: today.data.date } })}
+                    onStatus={(status) => setDone.mutate({ id: item.id, payload: { status, date: today.data.date } })}
+                    onPriority={(priority) => updateItem.mutate({ id: item.id, payload: { priority } })}
+                    onReminderToggle={() => updateItem.mutate({ id: item.id, payload: { reminder_enabled: !item.reminder_enabled } })}
+                    onStartTimer={() => startTimer.mutate({ id: item.id, date: today.data.date })}
+                    onStopTimer={() => stopTimer.mutate({ id: item.id, date: today.data.date })}
+                    onManualMinutes={(minutes) => setDone.mutate({ id: item.id, payload: { duration_minutes: minutes, date: today.data.date } })}
+                    onActualValue={(actual_value) => setDone.mutate({ id: item.id, payload: { actual_value, status: 'done', date: today.data.date } })}
+                    onDelete={() => deleteItem.mutate(item.id)}
+                    busy={setDone.isPending || deleteItem.isPending || updateItem.isPending || startTimer.isPending || stopTimer.isPending}
+                  />
+                ) : (
+                  <LoggedTodayRow key={item.id} item={item} />
+                )
               ))}
             </div>
           </section>
@@ -638,6 +642,37 @@ function RoutineRow({
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
+    </article>
+  );
+}
+
+function LoggedTodayRow({ item }: { item: TodayRoutineItem }) {
+  const tag = [item.parent_tag ?? item.category, item.sub_tag].filter(Boolean).join(' / ');
+  const sourceLabel = item.type === 'learning_log' ? 'Learning log' : 'Hobby session';
+
+  return (
+    <article className="flex flex-col gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-950/20 sm:p-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-start gap-3">
+        <span className="tap-target mt-1 inline-flex shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white">
+          <Check className="h-4 w-4" />
+        </span>
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-bold">{item.title}</h3>
+            <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200 dark:bg-slate-950 dark:text-emerald-300 dark:ring-emerald-900">{sourceLabel}</span>
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <span>{tag}</span>
+            {item.time_block ? <span>{item.time_block}</span> : null}
+            {item.duration_minutes !== null ? <span>{item.duration_minutes} min</span> : null}
+          </div>
+          {item.note ? <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.note}</p> : null}
+        </div>
+      </div>
+      <span className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 dark:border-emerald-900 dark:bg-slate-950 dark:text-emerald-300">
+        <Check className="h-4 w-4" />
+        Logged
+      </span>
     </article>
   );
 }

@@ -1,7 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HobbyLog } from '../hobbies/entities/hobby-log.entity';
 import { LearningLog } from '../learning-logs/entities/learning-log.entity';
 import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.entity';
 import { MealEntry } from '../lifestyle/entities/meal-entry.entity';
@@ -26,7 +25,6 @@ export class UsersService {
     @InjectRepository(Reflection) private readonly reflectionsRepo: Repository<Reflection>,
     @InjectRepository(LifestyleActivity) private readonly lifestyleRepo: Repository<LifestyleActivity>,
     @InjectRepository(MealEntry) private readonly mealsRepo: Repository<MealEntry>,
-    @InjectRepository(HobbyLog) private readonly hobbyLogsRepo: Repository<HobbyLog>,
     @InjectRepository(Streak) private readonly streaksRepo: Repository<Streak>,
     @InjectRepository(CareArea) private readonly careAreasRepo: Repository<CareArea>,
     @InjectRepository(CareTask) private readonly careTasksRepo: Repository<CareTask>,
@@ -84,7 +82,7 @@ export class UsersService {
       reflections: this.reflectionsRepo,
       lifestyle_activities: this.lifestyleRepo,
       meal_entries: this.mealsRepo,
-      hobby_logs: this.hobbyLogsRepo,
+      hobby_logs: this.lifestyleRepo,
       streaks: this.streaksRepo,
       care_tasks: this.careTasksRepo,
       care_areas: this.careAreasRepo,
@@ -107,7 +105,7 @@ export class UsersService {
       'care_areas',
     ];
     const entries = await Promise.all(
-      categories.map(async (cat) => [cat, await this.repoFor(cat).count({ where: { user: { id: userId } } })] as const),
+      categories.map(async (cat) => [cat, await this.countCategory(userId, cat)] as const),
     );
     return Object.fromEntries(entries) as Record<DeletableCategory, number>;
   }
@@ -115,9 +113,19 @@ export class UsersService {
   async deleteData(userId: string, dto: DeleteUserDataDto): Promise<{ deleted: Record<string, number> }> {
     const deleted: Record<string, number> = {};
     for (const cat of dto.categories) {
-      const result = await this.repoFor(cat).delete({ user: { id: userId } });
+      const result =
+        cat === 'hobby_logs'
+          ? await this.lifestyleRepo.delete({ user: { id: userId }, activity_type: 'hobby' })
+          : await this.repoFor(cat).delete({ user: { id: userId } });
       deleted[cat] = result.affected ?? 0;
     }
     return { deleted };
+  }
+
+  private countCategory(userId: string, category: DeletableCategory) {
+    if (category === 'hobby_logs') {
+      return this.lifestyleRepo.count({ where: { user: { id: userId }, activity_type: 'hobby' } });
+    }
+    return this.repoFor(category).count({ where: { user: { id: userId } } });
   }
 }

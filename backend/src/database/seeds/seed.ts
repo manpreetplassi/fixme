@@ -2,14 +2,12 @@ import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { CareArea } from '../../self-care/entities/care-area.entity';
 import { CareTask } from '../../self-care/entities/care-task.entity';
-import { Hobby } from '../../hobbies/entities/hobby.entity';
 import { Solution } from '../../solutions-bank/entities/solution.entity';
 import { User } from '../../users/entities/user.entity';
 import { AppDataSource } from '../data-source';
 
 export async function runSeed(dataSource: DataSource): Promise<void> {
   const userRepo = dataSource.getRepository(User);
-  const hobbyRepo = dataSource.getRepository(Hobby);
   const solutionRepo = dataSource.getRepository(Solution);
   const careAreaRepo = dataSource.getRepository(CareArea);
   const careTaskRepo = dataSource.getRepository(CareTask);
@@ -24,23 +22,6 @@ export async function runSeed(dataSource: DataSource): Promise<void> {
         bio: 'Demo account for local development',
         preferred_hobbies: ['Dance Practice', 'Bike Ride'],
       }),
-    );
-  }
-
-  const hobbiesCount = await hobbyRepo.count();
-  if (hobbiesCount === 0) {
-    await hobbyRepo.save(
-      hobbyRepo.create([
-        { name: 'Dance Practice', category: 'sports', icon: 'music', suggested_minutes_per_day: 15, default_points_per_instance: 5, display_order: 1 },
-        { name: 'Read Poetry', category: 'learning', icon: 'book-heart', suggested_minutes_per_day: 10, default_points_per_instance: 4, display_order: 2 },
-        { name: 'Try New Recipe', category: 'creative', icon: 'chef-hat', suggested_minutes_per_day: 30, default_points_per_instance: 7, display_order: 3 },
-        { name: 'Write Story/Journal', category: 'creative', icon: 'pen-line', suggested_minutes_per_day: 20, default_points_per_instance: 5, display_order: 4 },
-        { name: 'Gurudwara Visit', category: 'spiritual', icon: 'sparkles', suggested_minutes_per_day: 60, default_points_per_instance: 6, display_order: 5 },
-        { name: 'Bike Ride', category: 'sports', icon: 'bike', suggested_minutes_per_day: 60, default_points_per_instance: 8, is_weekend_only: true, display_order: 6 },
-        { name: 'Mocktails/Cocktails', category: 'social', icon: 'glass', suggested_minutes_per_day: 20, default_points_per_instance: 4, display_order: 7 },
-        { name: 'Swimming', category: 'sports', icon: 'waves', suggested_minutes_per_day: 45, default_points_per_instance: 8, is_weekend_only: true, display_order: 8 },
-        { name: 'English Practice', category: 'learning', icon: 'languages', suggested_minutes_per_day: 15, default_points_per_instance: 5, display_order: 9 },
-      ]),
     );
   }
 

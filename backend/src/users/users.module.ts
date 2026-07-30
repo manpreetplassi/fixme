@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HobbyLog } from '../hobbies/entities/hobby-log.entity';
 import { LearningLog } from '../learning-logs/entities/learning-log.entity';
 import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.entity';
 import { MealEntry } from '../lifestyle/entities/meal-entry.entity';
@@ -26,7 +25,6 @@ import { UsersService } from './users.service';
       Reflection,
       LifestyleActivity,
       MealEntry,
-      HobbyLog,
       Streak,
       CareArea,
       CareTask,

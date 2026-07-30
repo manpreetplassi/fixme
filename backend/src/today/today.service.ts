@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, IsNull, Repository } from 'typeorm';
+import { LearningLog } from '../learning-logs/entities/learning-log.entity';
+import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.entity';
 import { User } from '../users/entities/user.entity';
 import { StreaksService } from '../streaks/streaks.service';
 import { CreateRoutineItemDto, ScreenCheckInDto, SetRoutineDoneDto, UpdateRoutineItemDto } from './dto/today.dto';
@@ -24,6 +26,8 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(RoutineCompletion) private readonly completionRepo: Repository<RoutineCompletion>,
     @InjectRepository(ScreenCheckIn) private readonly screenRepo: Repository<ScreenCheckIn>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(LifestyleActivity) private readonly activityRepo: Repository<LifestyleActivity>,
+    @InjectRepository(LearningLog) private readonly learningRepo: Repository<LearningLog>,
     private readonly reminders: TodayRemindersService,
     private readonly streaksService: StreaksService,
   ) {}
@@ -44,10 +48,12 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
   async getToday(user: User, date = this.todayString()) {
     await this.ensureStarterRoutine(user);
     if (date < this.todayString()) await this.materializeMissingCompletions(user, date);
-    const [items, completions, checkIns] = await Promise.all([
+    const [items, completions, checkIns, hobbyActivities, learningLogs] = await Promise.all([
       this.routineRepo.find({ where: { user: { id: user.id }, is_active: true }, order: { display_order: 'ASC', created_at: 'ASC' } }),
       this.completionRepo.find({ where: { user: { id: user.id }, completion_date: date }, relations: { routine_item: true } }),
       this.screenRepo.find({ where: { user: { id: user.id }, check_date: date } }),
+      this.activityRepo.find({ where: { user: { id: user.id }, activity_date: date, activity_type: 'hobby' }, order: { start_time: 'ASC', created_at: 'ASC' } }),
+      this.learningRepo.find({ where: { user: { id: user.id }, log_date: date }, order: { created_at: 'ASC' } }),
     ]);
 
     const routine = items
@@ -78,7 +84,11 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
       };
     });
 
-    const allItems = [...routine, ...checks].sort(this.sortItems);
+    const loggedItems = [
+      ...hobbyActivities.map((activity) => this.toLoggedActivityResponse(activity)),
+      ...learningLogs.map((log) => this.toLearningLogResponse(log)),
+    ];
+    const allItems = [...routine, ...loggedItems, ...checks].sort(this.sortItems);
     const overdue = allItems.filter((item) => item.overdue && item.reminder_enabled);
 
     return {
@@ -342,6 +352,80 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
       linked_money_entry_id: completion?.linked_money_entry_id ?? item.linked_money_entry_id,
       is_done: isDone,
       overdue: this.isOverdue(item.time_block, isDone, date),
+    };
+  }
+
+  private toLoggedActivityResponse(activity: LifestyleActivity) {
+    return {
+      id: activity.id,
+      type: 'lifestyle_activity',
+      title: activity.name ?? 'Hobby activity',
+      category: 'hobby',
+      parent_tag: 'Hobbies',
+      sub_tag: null,
+      time_block: activity.start_time,
+      priority: 'low',
+      repeat_rule: 'logged',
+      scheduled_date: activity.activity_date,
+      item_type: 'simple',
+      target_value: null,
+      target_unit: null,
+      tolerance_value: null,
+      reminder_enabled: false,
+      reminder_trigger_type: 'time',
+      reminder_trigger_item_id: null,
+      time_tracking_enabled: false,
+      status: 'done',
+      points: 0,
+      source: 'lifestyle_activity',
+      plan_id: null,
+      icon: null,
+      points_earned: 0,
+      score: null,
+      duration_minutes: activity.duration_minutes,
+      timer_started_at: null,
+      actual_value: null,
+      linked_money_entry_id: activity.linked_money_entry_id,
+      is_done: true,
+      overdue: false,
+      note: activity.notes,
+    };
+  }
+
+  private toLearningLogResponse(log: LearningLog) {
+    return {
+      id: log.id,
+      type: 'learning_log',
+      title: log.title,
+      category: 'learning',
+      parent_tag: 'Learning',
+      sub_tag: log.tags,
+      time_block: null,
+      priority: 'low',
+      repeat_rule: 'logged',
+      scheduled_date: log.log_date,
+      item_type: 'simple',
+      target_value: null,
+      target_unit: null,
+      tolerance_value: null,
+      reminder_enabled: false,
+      reminder_trigger_type: 'time',
+      reminder_trigger_item_id: null,
+      time_tracking_enabled: false,
+      status: 'done',
+      points: 0,
+      source: 'learning_log',
+      plan_id: null,
+      icon: null,
+      points_earned: 0,
+      score: null,
+      duration_minutes: null,
+      timer_started_at: null,
+      actual_value: null,
+      linked_money_entry_id: null,
+      is_done: true,
+      overdue: false,
+      note: log.key_notes,
     };
   }
 

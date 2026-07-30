@@ -145,6 +145,21 @@ export class LifestyleService {
     );
   }
 
+  listActivities(userId: string, activityType?: string, startDate?: string, endDate?: string) {
+    const query = this.activityRepo
+      .createQueryBuilder('activity')
+      .where('activity.user_id = :userId', { userId })
+      .orderBy('activity.activity_date', 'DESC')
+      .addOrderBy('activity.start_time', 'ASC')
+      .addOrderBy('activity.created_at', 'DESC');
+
+    if (activityType) query.andWhere('activity.activity_type = :activityType', { activityType });
+    if (startDate) query.andWhere('activity.activity_date >= :startDate', { startDate });
+    if (endDate) query.andWhere('activity.activity_date <= :endDate', { endDate });
+
+    return query.take(100).getMany();
+  }
+
   async updateActivity(userId: string, id: string, dto: Partial<ActivityDto>) {
     const activity = await this.findActivity(userId, id);
     Object.assign(activity, dto);

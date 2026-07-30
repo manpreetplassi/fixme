@@ -8,9 +8,11 @@ import { TodayRemindersService } from './today-reminders.service';
 import { TodayService } from './today.service';
 import { User } from '../users/entities/user.entity';
 import { StreaksModule } from '../streaks/streaks.module';
+import { LearningLog } from '../learning-logs/entities/learning-log.entity';
+import { LifestyleActivity } from '../lifestyle/entities/lifestyle-activity.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RoutineItem, RoutineCompletion, ScreenCheckIn, User]), StreaksModule],
+  imports: [TypeOrmModule.forFeature([RoutineItem, RoutineCompletion, ScreenCheckIn, User, LifestyleActivity, LearningLog]), StreaksModule],
   controllers: [TodayController],
   providers: [TodayService, TodayRemindersService],
   exports: [TodayService],

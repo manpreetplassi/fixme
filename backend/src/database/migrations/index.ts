@@ -8,6 +8,7 @@ import { AddAddictionLabel1720600000000 } from './1720600000000-AddAddictionLabe
 import { MergeScreenCheckIns1720700000000 } from './1720700000000-MergeScreenCheckIns';
 import { AddSelfCare1720800000000 } from './1720800000000-AddSelfCare';
 import { RoutineStatusTimingTags1720900000000 } from './1720900000000-RoutineStatusTimingTags';
+import { BackfillHobbyLifestyleActivitiesDrift1721000000000 } from './1721000000000-BackfillHobbyLifestyleActivitiesDrift';
 
 export const migrations = [
   InitialSchema1719600000000,
@@ -20,4 +21,5 @@ export const migrations = [
   MergeScreenCheckIns1720700000000,
   AddSelfCare1720800000000,
   RoutineStatusTimingTags1720900000000,
+  BackfillHobbyLifestyleActivitiesDrift1721000000000,
 ];

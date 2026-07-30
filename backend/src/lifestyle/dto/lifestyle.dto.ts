@@ -51,7 +51,7 @@ export class MealTemplateDto {
 
 export class ActivityDto {
   @ApiPropertyOptional() @IsOptional() @IsString() date?: string;
-  @ApiPropertyOptional() @IsIn(['exercise', 'productivity']) activity_type: string;
+  @ApiPropertyOptional() @IsIn(['exercise', 'productivity', 'hobby']) activity_type: string;
   @ApiPropertyOptional() @IsOptional() @IsString() name?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() start_time?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() end_time?: string;

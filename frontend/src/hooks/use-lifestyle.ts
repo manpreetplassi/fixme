@@ -1,12 +1,13 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createLifestyleActivity, createMeal, createMealTemplate, deleteLifestyleActivity, deleteMeal, getLifestyleAnalytics, getLifestyleToday, getMealTemplates, searchLifestyle, updateLifestyleDay, useMealTemplate } from '@/lib/api/lifestyle';
+import { createLifestyleActivity, createMeal, createMealTemplate, deleteLifestyleActivity, deleteMeal, getLifestyleActivities, getLifestyleAnalytics, getLifestyleToday, getMealTemplates, searchLifestyle, updateLifestyleActivity, updateLifestyleDay, useMealTemplate } from '@/lib/api/lifestyle';
 
 function useLifestyleInvalidation() {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: ['lifestyle'] });
+    void queryClient.invalidateQueries({ queryKey: ['lifestyle-activities'] });
     void queryClient.invalidateQueries({ queryKey: ['lifestyle-analytics'] });
   };
 }
@@ -21,6 +22,10 @@ export function useMealTemplates() {
 
 export function useLifestyleAnalytics(range: 'week' | 'month' = 'week') {
   return useQuery({ queryKey: ['lifestyle-analytics', range], queryFn: () => getLifestyleAnalytics(range) });
+}
+
+export function useLifestyleActivities(params?: { type?: string; startDate?: string; endDate?: string }) {
+  return useQuery({ queryKey: ['lifestyle-activities', params], queryFn: () => getLifestyleActivities(params) });
 }
 
 export function useLifestyleSearch(query: string) {
@@ -58,6 +63,11 @@ export function useUseMealTemplate() {
 export function useCreateLifestyleActivity() {
   const invalidate = useLifestyleInvalidation();
   return useMutation({ mutationFn: createLifestyleActivity, onSuccess: invalidate });
+}
+
+export function useUpdateLifestyleActivity() {
+  const invalidate = useLifestyleInvalidation();
+  return useMutation({ mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) => updateLifestyleActivity(id, payload), onSuccess: invalidate });
 }
 
 export function useDeleteLifestyleActivity() {

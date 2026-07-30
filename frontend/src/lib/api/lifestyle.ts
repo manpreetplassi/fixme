@@ -45,7 +45,7 @@ export type MealEntry = {
 export type LifestyleActivity = {
   id: string;
   activity_date: string;
-  activity_type: 'exercise' | 'productivity';
+  activity_type: 'exercise' | 'productivity' | 'hobby' | string;
   name: string | null;
   start_time: string | null;
   end_time: string | null;
@@ -102,6 +102,16 @@ export async function useMealTemplate(id: string) {
 
 export async function createLifestyleActivity(payload: Record<string, unknown>) {
   const response = await apiClient.post('/lifestyle/activities', payload);
+  return response.data.data;
+}
+
+export async function getLifestyleActivities(params?: { type?: string; startDate?: string; endDate?: string }) {
+  const response = await apiClient.get('/lifestyle/activities', { params });
+  return response.data.data;
+}
+
+export async function updateLifestyleActivity(id: string, payload: Record<string, unknown>) {
+  const response = await apiClient.patch(`/lifestyle/activities/${id}`, payload);
   return response.data.data;
 }
 

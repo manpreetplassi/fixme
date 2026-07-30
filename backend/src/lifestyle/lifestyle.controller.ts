@@ -59,6 +59,11 @@ export class LifestyleController {
     return this.service.createActivity(user, dto);
   }
 
+  @Get('activities')
+  activities(@CurrentUser() user: User, @Query('type') type?: string, @Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
+    return this.service.listActivities(user.id, type, startDate, endDate);
+  }
+
   @Patch('activities/:id')
   updateActivity(@CurrentUser() user: User, @Param('id') id: string, @Body() dto: Partial<ActivityDto>) {
     return this.service.updateActivity(user.id, id, dto);
