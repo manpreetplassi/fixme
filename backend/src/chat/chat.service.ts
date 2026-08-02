@@ -21,6 +21,13 @@ type PendingActionType =
   | 'routine_item_create'
   | 'routine_item_update';
 
+type PendingActionCard = {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  requires_confirmation: true;
+};
+
 const writeFunctionMap: Record<string, PendingActionType> = {
   markRoutineItemDone: 'routine_item_mark_done',
   createMoneyEntry: 'money_entry_create',
@@ -94,12 +101,22 @@ export class ChatService {
       order: { created_at: 'ASC' },
     });
 
-    let assistantContent = '';
-    for await (const chunk of this.geminiService.streamChat(history.map((message) => ({ role: message.role, content: message.content })))) {
-      assistantContent += chunk;
-      onChunk(chunk);
+    let rawAssistantContent = '';
+    let streamedVisibleContent = '';
+    const accountContext = await this.buildAccountContext(user);
+    for await (const chunk of this.geminiService.streamChat(history.map((message) => ({ role: message.role, content: message.content })), accountContext)) {
+      rawAssistantContent += chunk;
+      const visibleContent = this.stripActionBlocks(rawAssistantContent);
+      const visibleChunk = visibleContent.slice(streamedVisibleContent.length);
+      if (visibleChunk) onChunk(visibleChunk);
+      streamedVisibleContent = visibleContent;
     }
 
+    const { content: assistantContent, actionCalls } = this.extractActionCalls(rawAssistantContent);
+    const pendingActions = await this.proposeActionCalls(user, actionCalls);
+    if (pendingActions.length > 0) {
+      onChunk(this.pendingActionsBlock(pendingActions));
+    }
     await this.messageRepo.save(this.messageRepo.create({ conversation, role: 'assistant', content: assistantContent, is_streamed: true }));
     if (!conversation.title) conversation.title = this.titleFromContent(userContent);
     await this.conversationRepo.save(conversation);
@@ -234,6 +251,142 @@ export class ChatService {
       if (category && entry.category !== category) return false;
       return true;
     });
+  }
+
+  private async buildAccountContext(user: User) {
+    const today = await this.todayService.getToday(user);
+    const [moneyEntries, moneySummary] = await Promise.all([
+      this.moneyTrackerService.findAll(user.id),
+      this.moneyTrackerService.summary(user.id),
+    ]);
+
+    const snapshot = {
+      user: { id: user.id, email: user.email, name: user.name },
+      today: {
+        date: today.date,
+        items: today.items.slice(0, 40).map((item: Record<string, unknown>) => ({
+          id: item.id,
+          type: item.type,
+          title: item.title,
+          category: item.category,
+          priority: item.priority,
+          time_block: item.time_block,
+          status: item.status,
+          is_done: item.is_done,
+          overdue: item.overdue,
+        })),
+        overdue: today.overdue.slice(0, 15).map((item: Record<string, unknown>) => ({
+          id: item.id,
+          title: item.title,
+          priority: item.priority,
+          time_block: item.time_block,
+        })),
+        screen: today.screen,
+      },
+      money: {
+        summary: moneySummary,
+        recentEntries: moneyEntries.slice(0, 25).map((entry) => ({
+          id: entry.id,
+          amount: entry.amount,
+          type: entry.type,
+          category: entry.category,
+          reason: entry.reason,
+          name: entry.name,
+          log_date: entry.log_date,
+          needs_price: entry.needs_price,
+        })),
+      },
+    };
+
+    return `Account snapshot for this authenticated user. Use only this user's data:\n${JSON.stringify(snapshot)}`;
+  }
+
+  private stripActionBlocks(content: string) {
+    const withoutCompleteBlocks = content.replace(/FIXME_ACTIONS_JSON[\s\S]*?END_FIXME_ACTIONS_JSON/g, '');
+    const marker = 'FIXME_ACTIONS_JSON';
+    const markerIndex = withoutCompleteBlocks.indexOf(marker);
+    if (markerIndex >= 0) return withoutCompleteBlocks.slice(0, markerIndex).trimStart();
+
+    for (let length = marker.length - 1; length > 0; length -= 1) {
+      if (withoutCompleteBlocks.endsWith(marker.slice(0, length))) {
+        return withoutCompleteBlocks.slice(0, -length).trimStart();
+      }
+    }
+
+    return withoutCompleteBlocks.trimStart();
+  }
+
+  private extractActionCalls(content: string) {
+    const actionCalls: Array<{ name: string; arguments: Record<string, unknown> }> = [];
+    const pattern = /FIXME_ACTIONS_JSON\s*([\s\S]*?)\s*END_FIXME_ACTIONS_JSON/g;
+    let match = pattern.exec(content);
+    while (match) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        if (Array.isArray(parsed)) {
+          actionCalls.push(...parsed.filter((item) => (
+            item &&
+            typeof item.name === 'string' &&
+            typeof item.arguments === 'object' &&
+            item.arguments !== null
+          )));
+        }
+      } catch {
+        // Ignore malformed model action blocks; the visible assistant answer is still useful.
+      }
+      match = pattern.exec(content);
+    }
+
+    return {
+      content: this.stripActionBlocks(content).trim(),
+      actionCalls,
+    };
+  }
+
+  private async proposeActionCalls(user: User, actionCalls: Array<{ name: string; arguments: Record<string, unknown> }>) {
+    const pendingActions: PendingActionCard[] = [];
+    for (const call of actionCalls.slice(0, 5)) {
+      if (!writeFunctionMap[call.name]) continue;
+      const payload = this.normalizeActionPayload(call.name, call.arguments);
+      const proposed = await this.proposeWriteAction(user, writeFunctionMap[call.name], payload);
+      pendingActions.push({ ...proposed.pending_action, requires_confirmation: true });
+    }
+    return pendingActions;
+  }
+
+  private normalizeActionPayload(name: string, payload: Record<string, unknown>) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (name === 'createRoutineItem') {
+      return {
+        category: 'personal',
+        priority: 'important',
+        repeat_rule: 'once',
+        scheduled_date: today,
+        points: 10,
+        ...payload,
+      };
+    }
+    if (name === 'createMoneyEntry') {
+      return {
+        log_date: today,
+        type: 'spent',
+        category: 'Other',
+        ...payload,
+      };
+    }
+    if (name === 'markRoutineItemDone') {
+      return {
+        status: 'done',
+        is_done: true,
+        date: today,
+        ...payload,
+      };
+    }
+    return payload;
+  }
+
+  private pendingActionsBlock(actions: PendingActionCard[]) {
+    return `\nFIXME_PENDING_ACTIONS_JSON\n${JSON.stringify(actions)}\nEND_FIXME_PENDING_ACTIONS_JSON`;
   }
 
   private validatedNestedDto<T extends object>(DtoClass: new () => T, payload: Record<string, unknown>, fields: string[]) {

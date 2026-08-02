@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class GeminiService {
-  private static readonly defaultModel = 'gemini-1.5-flash';
+  private static readonly defaultModel = 'gemini-3.6-flash';
   private static readonly apiKeyNames = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY'];
   private readonly logger = new Logger(GeminiService.name);
   private readonly client: GoogleGenerativeAI | null;
@@ -57,7 +57,7 @@ Return only valid JSON:
     }
   }
 
-  async *streamChat(messages: Array<{ role: 'user' | 'assistant'; content: string }>): AsyncGenerator<string> {
+  async *streamChat(messages: Array<{ role: 'user' | 'assistant'; content: string }>, accountContext?: string): AsyncGenerator<string> {
     if (!this.client) {
       yield this.fallbackChatResponse(messages.at(-1)?.content ?? '', 'not_configured');
       return;
@@ -78,7 +78,7 @@ Return only valid JSON:
         role: message.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: message.content }],
       }));
-      const latest = messages.at(-1)?.content ?? '';
+      const latest = this.withChatContext(messages.at(-1)?.content ?? '', accountContext);
       const result = await model.startChat({ history }).sendMessageStream(latest);
       for await (const chunk of result.stream) {
         const text = chunk.text();
@@ -124,6 +124,26 @@ Return only valid JSON:
       keyName: this.configuredKeyName,
       model: this.modelName,
     };
+  }
+
+  private withChatContext(message: string, accountContext?: string) {
+    if (!accountContext) return message;
+    return `${accountContext}
+
+Chat instructions:
+- Use the account snapshot to review the user's real tasks, money entries, blockers, and routines.
+- If the user asks to create, update, delete, or mark something done, append a machine-readable action block after your visible answer.
+- The block format must be exactly:
+FIXME_ACTIONS_JSON
+[{"name":"createRoutineItem","arguments":{"title":"Example","category":"health","priority":"important","repeat_rule":"daily","points":10}}]
+END_FIXME_ACTIONS_JSON
+- Allowed action names: createRoutineItem, updateRoutineItem, markRoutineItemDone, createMoneyEntry, updateMoneyEntry, deleteMoneyEntry.
+- Use IDs from the account snapshot for updates, deletes, and marking done.
+- Do not claim anything was saved until the user confirms the proposed action in the app.
+- For review/advice questions, do not emit an action block.
+
+User message:
+${message}`;
   }
 
   private resolveApiKey() {

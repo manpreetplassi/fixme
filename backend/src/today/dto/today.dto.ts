@@ -8,6 +8,7 @@ export class CreateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() time_block?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() consequence_note?: string | null;
+  @ApiPropertyOptional() @IsIn(['urgent', 'important', 'low']) priority: string;
   @ApiPropertyOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule: string;
   @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsIn(['simple', 'measurable']) item_type?: string;
