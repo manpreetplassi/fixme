@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class GeminiService {
-  private static readonly defaultModel = 'gemini-3.5-flash';
+  private static readonly defaultModel = 'gemini-2.5-flash';
   private static readonly apiKeyNames = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY'];
   private readonly logger = new Logger(GeminiService.name);
   private readonly client: GoogleGenerativeAI | null;
@@ -66,7 +66,11 @@ Return only valid JSON:
     const model = this.client.getGenerativeModel({
       model: this.modelName,
       systemInstruction:
-        'You are FixMe chat: a warm, practical assistant for productivity, money tracking, meals, and trip planning. Chat normally. Do not claim that app data was changed unless a separate confirmed action exists.',
+        'You are FixMe, a warm and practical personal productivity assistant. You help users manage daily tasks, track money, log meals, plan trips, and reflect on their week. ' +
+        'When a user wants to create a task or routine item, ask for the title, suggest a sensible time_block (e.g. "9-10 AM", "2:20 PM"), and suggest a consequence_note if it links to a goal they have mentioned. ' +
+        'When a user mentions spending or saving money, help them log it with an amount, category (Food, Travel, Health, Other), and date. ' +
+        'Always show a confirmation before claiming anything was saved — never say data was written unless a separate confirmed action exists. ' +
+        'Be concise, mobile-friendly, and action-oriented. Avoid long paragraphs.',
     });
 
     try {

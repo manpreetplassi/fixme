@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, ILike, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { MoneyTrackerService } from '../money-tracker/money-tracker.service';
 import { ActivityDto, MealDto, MealTemplateDto, UpsertLifestyleDayDto } from './dto/lifestyle.dto';
 import { LifestyleActivity } from './entities/lifestyle-activity.entity';
 import { LifestyleDay } from './entities/lifestyle-day.entity';
@@ -15,6 +16,7 @@ export class LifestyleService {
     @InjectRepository(MealEntry) private readonly mealRepo: Repository<MealEntry>,
     @InjectRepository(MealTemplate) private readonly templateRepo: Repository<MealTemplate>,
     @InjectRepository(LifestyleActivity) private readonly activityRepo: Repository<LifestyleActivity>,
+    private readonly moneyTrackerService: MoneyTrackerService,
   ) {}
 
   async getToday(user: User, date = this.todayString()) {
@@ -79,12 +81,37 @@ export class LifestyleService {
       quantity: dto.quantity ?? null,
       notes: dto.notes ?? null,
     });
-    return this.mealRepo.save(meal);
+    const saved = await this.mealRepo.save(meal);
+
+    // Auto-create a money entry for outside food meals so cost can be tracked
+    if (saved.outside_food) {
+      const moneyEntry = await this.moneyTrackerService.create(user, {
+        log_date: saved.meal_date,
+        type: 'spent',
+        category: 'Food',
+        amount: saved.cost ?? undefined,
+        needs_price: saved.cost == null,
+        reason: saved.meal_name ?? saved.meal_type,
+        linked_source_type: 'meal_entry',
+        linked_source_id: saved.id,
+      });
+      saved.linked_money_entry_id = moneyEntry.id;
+      await this.mealRepo.save(saved);
+    }
+
+    return saved;
   }
 
   async updateMeal(userId: string, id: string, dto: Partial<MealDto>) {
     const meal = await this.findMeal(userId, id);
     Object.assign(meal, { ...dto, food_items: dto.food_items ? this.cleanList(dto.food_items) : meal.food_items });
+    if (dto.cost !== undefined) {
+      meal.needs_price = dto.cost == null;
+      // Sync cost back to linked money entry
+      if (meal.linked_money_entry_id && dto.cost != null) {
+        await this.moneyTrackerService.update(meal.linked_money_entry_id, userId, { amount: dto.cost, needs_price: false });
+      }
+    }
     return this.mealRepo.save(meal);
   }
 

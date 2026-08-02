@@ -1,16 +1,13 @@
-import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export class CreateRoutineItemDto {
   @ApiPropertyOptional() @IsString() title: string;
   @ApiPropertyOptional() @IsString() category: string;
   @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
-  @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() time_block?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() consequence_note?: string | null;
-  @ApiPropertyOptional() @IsIn(['urgent', 'important', 'low']) priority: string;
   @ApiPropertyOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule: string;
   @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsIn(['simple', 'measurable']) item_type?: string;
@@ -32,7 +29,7 @@ export class UpdateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsString() category?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
-  @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() time_block?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() consequence_note?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsIn(['urgent', 'important', 'low']) priority?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule?: string;
@@ -71,5 +68,5 @@ export class ScreenCheckInDto {
   @ApiPropertyOptional() @IsOptional() @IsString() date?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['reel_short', 'youtube', 'movie', 'show', 'other']) content_type?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() title_note?: string;
-  @ApiPropertyOptional() @IsOptional() @Matches(timePattern) stopped_watching_at?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() stopped_watching_at?: string;
 }
