@@ -4,13 +4,14 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, ChevronRight, Film, HeartPulse, House, IndianRupee, LogOut, Settings, Sparkles, SquareCheckBig } from 'lucide-react';
+import { BarChart3, Bike, BookOpen, BookHeart, CalendarCheck, ChevronRight, Film, HeartPulse, House, IndianRupee, LogOut, MessageCircle, Settings, Sparkles, SquareCheckBig } from 'lucide-react';
 import { useAuth, useLogout } from '@/hooks/use-auth';
 import { useNavVisibility } from '@/hooks/use-nav-visibility';
 import { ProfileDrawer } from './profile-drawer';
 
 export const navItems = [
   { href: '/today', label: 'Today', icon: CalendarCheck },
+  { href: '/chat', label: 'Chat', icon: MessageCircle },
   { href: '/dashboard', label: 'Dashboard', icon: House },
   { href: '/tracker', label: 'History', icon: SquareCheckBig },
   { href: '/money', label: 'Money', icon: IndianRupee },

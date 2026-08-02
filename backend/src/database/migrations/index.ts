@@ -9,6 +9,8 @@ import { MergeScreenCheckIns1720700000000 } from './1720700000000-MergeScreenChe
 import { AddSelfCare1720800000000 } from './1720800000000-AddSelfCare';
 import { RoutineStatusTimingTags1720900000000 } from './1720900000000-RoutineStatusTimingTags';
 import { BackfillHobbyLifestyleActivitiesDrift1721000000000 } from './1721000000000-BackfillHobbyLifestyleActivitiesDrift';
+import { AddAiActionLog1721100000000 } from './1721100000000-AddAiActionLog';
+import { ChatConversationsAndCaptureFields1721200000000 } from './1721200000000-ChatConversationsAndCaptureFields';
 
 export const migrations = [
   InitialSchema1719600000000,
@@ -22,4 +24,6 @@ export const migrations = [
   AddSelfCare1720800000000,
   RoutineStatusTimingTags1720900000000,
   BackfillHobbyLifestyleActivitiesDrift1721000000000,
+  AddAiActionLog1721100000000,
+  ChatConversationsAndCaptureFields1721200000000,
 ];

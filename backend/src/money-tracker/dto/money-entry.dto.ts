@@ -14,6 +14,8 @@ export class CreateMoneyEntryDto {
   @ApiPropertyOptional() @IsOptional() @IsBoolean() needs_price?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() source_type?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsUUID() source_id?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() linked_source_type?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() linked_source_id?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() plan_id?: string | null;
 }
 
@@ -30,5 +32,7 @@ export class UpdateMoneyEntryDto {
   @ApiPropertyOptional() @IsOptional() @IsBoolean() needs_price?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() source_type?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsUUID() source_id?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() linked_source_type?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() linked_source_id?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() plan_id?: string | null;
 }

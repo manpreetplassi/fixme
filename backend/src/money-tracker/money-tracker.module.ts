@@ -8,5 +8,6 @@ import { MoneyEntry } from './entities/money-entry.entity';
   imports: [TypeOrmModule.forFeature([MoneyEntry])],
   controllers: [MoneyTrackerController],
   providers: [MoneyTrackerService],
+  exports: [MoneyTrackerService],
 })
 export class MoneyTrackerModule {}

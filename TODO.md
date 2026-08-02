@@ -167,6 +167,17 @@ Use this file as the task runner.
 - [x] Move GeminiService model name off the hardcoded `gemini-1.5-flash` literal into an env var (`GEMINI_MODEL`).
 - [x] Set a sensible current default and document the env var in deployment docs.
 
+## Phase 22a - AI write-confirmation guardrail
+
+- [ ] Add `AI_WRITE_ENABLED=false` env/docs kill-switch and enforce that chat write functions always return `confirmation_required` pending actions.
+- [ ] Define read-only auto-executing chat functions and write functions that create `pending_action` objects only.
+- [ ] Add `/chat/actions/:pendingActionId/confirm`, `/chat/actions/:pendingActionId/reject`, and `/chat/actions/history`.
+- [ ] Re-validate confirmed payloads and call the same existing money/today service methods used by non-AI endpoints.
+- [ ] Persist proposed/confirmed/rejected rows in `ai_action_log`.
+- [ ] Add frontend pending-action API/card primitives with obvious Pending and confirmed states.
+- [ ] Add tests proving write functions never persist without confirm and confirmed writes use the authenticated user id.
+- [ ] Ensure future Phase 22 write-function items execute via this pending_action + confirm flow, never directly.
+
 ## Phase 10 - Reflections integration
 
 - [ ] Add optional reflection note prompts for completion outcomes.

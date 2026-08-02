@@ -25,6 +25,9 @@ export class RoutineItem {
   @Column({ type: 'varchar', nullable: true })
   time_block: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  consequence_note: string | null;
+
   @Column({ default: 'important' })
   priority: string;
 

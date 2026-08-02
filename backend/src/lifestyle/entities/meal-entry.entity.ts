@@ -70,6 +70,9 @@ export class MealEntry {
   @Column({ type: 'uuid', nullable: true })
   linked_money_entry_id: string | null;
 
+  @Column({ default: false })
+  needs_price: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   outside_reason: string | null;
 

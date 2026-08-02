@@ -9,6 +9,7 @@ export class CreateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() consequence_note?: string | null;
   @ApiPropertyOptional() @IsIn(['urgent', 'important', 'low']) priority: string;
   @ApiPropertyOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule: string;
   @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
@@ -32,6 +33,7 @@ export class UpdateRoutineItemDto {
   @ApiPropertyOptional() @IsOptional() @IsString() parent_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsString() sub_tag?: string | null;
   @ApiPropertyOptional() @IsOptional() @Matches(timePattern) time_block?: string | null;
+  @ApiPropertyOptional() @IsOptional() @IsString() consequence_note?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsIn(['urgent', 'important', 'low']) priority?: string;
   @ApiPropertyOptional() @IsOptional() @IsIn(['daily', 'weekdays', 'weekly', 'once']) repeat_rule?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() scheduled_date?: string | null;
@@ -54,6 +56,7 @@ export class SetRoutineDoneDto {
   @ApiPropertyOptional() @IsOptional() @IsIn(['not_started', 'done', 'completed', 'failed', 'skipped']) status?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() date?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() note?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() blocker_reason?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) points_earned?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) duration_minutes?: number | null;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) actual_value?: number | null;

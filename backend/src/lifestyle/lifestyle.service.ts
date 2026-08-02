@@ -74,6 +74,7 @@ export class LifestyleService {
       tea: dto.tea ?? false,
       coffee: dto.coffee ?? false,
       cost: dto.cost ?? null,
+      needs_price: dto.cost == null,
       outside_reason: dto.outside_reason ?? null,
       quantity: dto.quantity ?? null,
       notes: dto.notes ?? null,

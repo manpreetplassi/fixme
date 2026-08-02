@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 import { getDatabaseUrl } from './database/database-url';
 import { migrations } from './database/migrations';
 import { GeminiModule } from './gemini/gemini.module';
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     }),
     UsersModule,
     AuthModule,
+    ChatModule,
     StreaksModule,
     TodayModule,
     HealthModule,

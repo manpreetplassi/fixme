@@ -53,4 +53,39 @@ Return only valid JSON:
       };
     }
   }
+
+  async *streamChat(messages: Array<{ role: 'user' | 'assistant'; content: string }>): AsyncGenerator<string> {
+    if (!this.client) {
+      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '');
+      return;
+    }
+
+    const model = this.client.getGenerativeModel({
+      model: this.modelName,
+      systemInstruction:
+        'You are FixMe chat: a warm, practical assistant for productivity, money tracking, meals, and trip planning. Chat normally. Do not claim that app data was changed unless a separate confirmed action exists.',
+    });
+
+    try {
+      const history = messages.slice(0, -1).map((message) => ({
+        role: message.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: message.content }],
+      }));
+      const latest = messages.at(-1)?.content ?? '';
+      const result = await model.startChat({ history }).sendMessageStream(latest);
+      for await (const chunk of result.stream) {
+        const text = chunk.text();
+        if (text) yield text;
+      }
+    } catch (error) {
+      this.logger.warn(`Gemini chat failed: ${String(error)}`);
+      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '');
+    }
+  }
+
+  private fallbackChatResponse(message: string) {
+    const trimmed = message.trim();
+    if (!trimmed) return 'I am here. Send me what you want to think through or plan next.';
+    return `I hear you: "${trimmed}". Gemini is not configured right now, so I saved the conversation and can still help with a simple next step: name the outcome, the deadline, and the first action you can take today.`;
+  }
 }

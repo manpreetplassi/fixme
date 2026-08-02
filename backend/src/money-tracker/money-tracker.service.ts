@@ -28,6 +28,7 @@ export class MoneyTrackerService {
     const entry = await this.findOne(id, userId);
     if (dto.parent_entry_id) await this.findOne(dto.parent_entry_id, userId);
     Object.assign(entry, this.cleanNullableFields(dto));
+    this.syncLinkedSourceAliases(entry);
     return this.repo.save(entry);
   }
 
@@ -72,6 +73,8 @@ export class MoneyTrackerService {
   }
 
   private withDefaults(user: User, dto: CreateMoneyEntryDto) {
+    const linkedSourceType = dto.linked_source_type ?? dto.source_type ?? null;
+    const linkedSourceId = dto.linked_source_id ?? dto.source_id ?? null;
     return {
       ...this.cleanNullableFields(dto),
       user,
@@ -80,7 +83,20 @@ export class MoneyTrackerService {
       category: dto.category ?? 'Other',
       is_recurring: dto.is_recurring ?? false,
       needs_price: dto.needs_price ?? dto.amount == null,
+      source_type: dto.source_type ?? linkedSourceType,
+      source_id: dto.source_id ?? linkedSourceId,
+      linked_source_type: linkedSourceType,
+      linked_source_id: linkedSourceId,
     };
+  }
+
+  private syncLinkedSourceAliases(entry: MoneyEntry) {
+    const linkedSourceType = entry.linked_source_type ?? entry.source_type ?? null;
+    const linkedSourceId = entry.linked_source_id ?? entry.source_id ?? null;
+    entry.source_type = entry.source_type ?? linkedSourceType;
+    entry.source_id = entry.source_id ?? linkedSourceId;
+    entry.linked_source_type = linkedSourceType;
+    entry.linked_source_id = linkedSourceId;
   }
 
   private cleanNullableFields<T extends CreateMoneyEntryDto | UpdateMoneyEntryDto>(dto: T) {

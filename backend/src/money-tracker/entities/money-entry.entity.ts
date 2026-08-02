@@ -47,6 +47,12 @@ export class MoneyEntry {
   source_id: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  linked_source_type: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  linked_source_id: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   plan_id: string | null;
 
   @CreateDateColumn()

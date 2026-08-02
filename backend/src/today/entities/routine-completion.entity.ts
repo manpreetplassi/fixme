@@ -32,6 +32,9 @@ export class RoutineCompletion {
   @Column({ type: 'text', nullable: true })
   note: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  blocker_reason: string | null;
+
   @Column({ default: 'not_started' })
   status: string;
 

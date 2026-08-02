@@ -109,6 +109,7 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
       parent_tag: parentTag,
       sub_tag: dto.sub_tag ?? null,
       time_block: dto.time_block ?? null,
+      consequence_note: dto.consequence_note ?? null,
       scheduled_date: dto.repeat_rule === 'once' ? dto.scheduled_date ?? this.todayString() : dto.scheduled_date ?? null,
       reminder_enabled: dto.reminder_enabled ?? false,
       reminder_trigger_type: dto.reminder_trigger_type ?? 'time',
@@ -158,6 +159,7 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
     completion.is_done = isDone;
     completion.completed_at = isDone ? new Date() : null;
     completion.note = dto.note ?? null;
+    completion.blocker_reason = dto.blocker_reason ?? null;
     completion.actual_value = dto.actual_value ?? null;
     completion.score = dto.score ?? this.calculateScore(item, status, completion.actual_value);
     completion.points_earned = dto.points_earned ?? this.calculatePoints(item, completion.score);
@@ -328,6 +330,7 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
       parent_tag: item.parent_tag ?? item.category,
       sub_tag: item.sub_tag,
       time_block: item.time_block,
+      consequence_note: item.consequence_note,
       priority: item.priority,
       repeat_rule: item.repeat_rule,
       scheduled_date: item.scheduled_date,
@@ -350,6 +353,7 @@ export class TodayService implements OnModuleInit, OnModuleDestroy {
       timer_started_at: completion?.timer_started_at ?? null,
       actual_value: completion?.actual_value ?? null,
       linked_money_entry_id: completion?.linked_money_entry_id ?? item.linked_money_entry_id,
+      blocker_reason: completion?.blocker_reason ?? null,
       is_done: isDone,
       overdue: this.isOverdue(item.time_block, isDone, date),
     };
