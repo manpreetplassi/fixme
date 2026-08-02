@@ -68,6 +68,13 @@ export class ChatService {
     });
   }
 
+  async deleteConversation(userId: string, conversationId: string) {
+    const conversation = await this.findConversation(userId, conversationId);
+    await this.messageRepo.delete({ conversation: { conversation_id: conversation.conversation_id } });
+    await this.conversationRepo.remove(conversation);
+    return { deleted: true };
+  }
+
   async getMessages(userId: string, conversationId: string) {
     const conversation = await this.findConversation(userId, conversationId);
     return this.messageRepo.find({
@@ -110,6 +117,10 @@ export class ChatService {
       gemini: this.geminiService.getStatus(),
       aiWriteEnabled: this.configService.get<string>('AI_WRITE_ENABLED', 'false') === 'true',
     };
+  }
+
+  diagnoseGemini() {
+    return this.geminiService.diagnose();
   }
 
   async executeFunctionCall(user: User, name: string, args: Record<string, unknown> = {}) {

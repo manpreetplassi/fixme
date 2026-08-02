@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -23,6 +23,12 @@ export class ChatController {
   @ApiOperation({ summary: 'List persistent chat conversations for the current user' })
   conversations(@CurrentUser() user: User) {
     return this.chatService.listConversations(user.id);
+  }
+
+  @Delete('conversations/:id')
+  @ApiOperation({ summary: 'Delete a conversation and all its messages' })
+  deleteConversation(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.chatService.deleteConversation(user.id, id);
   }
 
   @Get('conversations/:id/messages')
@@ -51,6 +57,12 @@ export class ChatController {
   @ApiOperation({ summary: 'Get safe chat/Gemini configuration status' })
   status() {
     return this.chatService.status();
+  }
+
+  @Post('diagnostics/gemini')
+  @ApiOperation({ summary: 'Run a safe Gemini connectivity diagnostic' })
+  diagnoseGemini() {
+    return this.chatService.diagnoseGemini();
   }
 
   @Post('functions/call')

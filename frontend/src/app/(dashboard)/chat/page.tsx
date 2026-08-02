@@ -2,13 +2,14 @@
 
 import clsx from 'clsx';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { Loader2, MessageCircle, Plus, Send } from 'lucide-react';
+import { Loader2, MessageCircle, Plus, Send, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { ChatMessage, createChatConversation, getChatMessages, listChatConversations, streamChatMessage } from '@/lib/api/chat';
+import { ChatMessage, ChatConversation, createChatConversation, deleteChatConversation, getChatMessages, listChatConversations, streamChatMessage } from '@/lib/api/chat';
 
 type LocalMessage = Pick<ChatMessage, 'role' | 'content' | 'is_streamed'> & { message_id: string; created_at?: string };
 
 export default function ChatPage() {
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [input, setInput] = useState('');
@@ -27,6 +28,7 @@ export default function ChatPage() {
         const conversation = conversations[0] ?? await createChatConversation();
         const history = await getChatMessages(conversation.conversation_id);
         if (!active) return;
+        setConversations(conversations.length ? conversations : [conversation]);
         setConversationId(conversation.conversation_id);
         setMessages(history);
       } catch {
@@ -50,12 +52,46 @@ export default function ChatPage() {
     setError(null);
     try {
       const conversation = await createChatConversation();
+      setConversations((prev) => [conversation, ...prev]);
       setConversationId(conversation.conversation_id);
       setMessages([]);
     } catch {
       setError('Could not start a new chat.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function switchConversation(id: string) {
+    if (id === conversationId || streaming) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const history = await getChatMessages(id);
+      setConversationId(id);
+      setMessages(history);
+    } catch {
+      setError('Could not load conversation.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deleteConversation(id: string) {
+    try {
+      await deleteChatConversation(id);
+      const remaining = conversations.filter((c) => c.conversation_id !== id);
+      if (id === conversationId) {
+        const next = remaining[0] ?? await createChatConversation();
+        const history = await getChatMessages(next.conversation_id);
+        setConversationId(next.conversation_id);
+        setMessages(history);
+        setConversations(remaining.length ? remaining : [next]);
+      } else {
+        setConversations(remaining);
+      }
+    } catch {
+      setError('Could not delete conversation.');
     }
   }
 
@@ -107,6 +143,21 @@ export default function ChatPage() {
             <Plus className="h-4 w-4" />
           </button>
         </div>
+
+        {conversations.length > 0 && (
+          <div className="flex gap-1 overflow-x-auto border-b border-slate-100 px-3 py-1.5 dark:border-slate-800">
+            {conversations.map((c) => (
+              <div key={c.conversation_id} className={clsx('group flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs', c.conversation_id === conversationId ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700')}>
+                <button type="button" onClick={() => switchConversation(c.conversation_id)} className="max-w-[8rem] truncate font-medium">
+                  {c.title ?? 'New chat'}
+                </button>
+                <button type="button" onClick={() => deleteConversation(c.conversation_id)} className={clsx('ml-0.5 rounded p-0.5 opacity-0 transition group-hover:opacity-100', c.conversation_id === conversationId ? 'hover:bg-white/20' : 'hover:bg-slate-300 dark:hover:bg-slate-600')} title="Delete conversation">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div ref={scrollerRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-4 sm:px-4">
           {loading ? <EmptyState text="Loading chat..." loading /> : null}

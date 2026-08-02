@@ -50,6 +50,11 @@ export async function getChatActionHistory() {
   return response.data.data;
 }
 
+export async function deleteChatConversation(conversationId: string) {
+  const response = await apiClient.delete(`/chat/conversations/${conversationId}`);
+  return response.data.data;
+}
+
 export async function createChatConversation() {
   const response = await apiClient.post('/chat/conversations');
   return response.data.data as ChatConversation;

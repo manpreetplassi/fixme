@@ -23,7 +23,7 @@ npm run dev
 
 - `docker compose up -d` starts only the required local service: PostgreSQL.
 - `npm run dev` installs missing dependencies, creates missing env files, runs backend migrations, seeds demo data, and starts both the backend and frontend dev servers.
-- Gemini integration is optional; leave `GEMINI_API_KEY` empty to use the fallback analysis path. When configured, `GEMINI_MODEL` defaults to `gemini-2.5-flash`.
+- Gemini integration is optional; leave `GEMINI_API_KEY` empty to use the fallback analysis path. When configured, `GEMINI_MODEL` defaults to `gemini-3.5-flash`.
 - `AI_WRITE_ENABLED` defaults to `false`. Gemini/chat write functions are always proposed as pending actions first and never write to the database until the signed-in user confirms them.
 - The frontend expects the API base URL to include `/api`.
 

@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class GeminiService {
-  private static readonly defaultModel = 'gemini-2.5-flash';
+  private static readonly defaultModel = 'gemini-3.5-flash';
   private static readonly apiKeyNames = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY'];
   private readonly logger = new Logger(GeminiService.name);
   private readonly client: GoogleGenerativeAI | null;
@@ -86,6 +86,34 @@ Return only valid JSON:
     }
   }
 
+  async diagnose() {
+    if (!this.client) {
+      return {
+        ok: false,
+        reason: 'not_configured',
+        status: this.getStatus(),
+      };
+    }
+
+    try {
+      const model = this.client.getGenerativeModel({ model: this.modelName });
+      const response = await model.generateContent('Reply with exactly: ok');
+      return {
+        ok: true,
+        status: this.getStatus(),
+        sample: response.response.text().trim(),
+      };
+    } catch (error) {
+      this.logger.warn(`Gemini diagnostic failed: ${String(error)}`);
+      return {
+        ok: false,
+        reason: 'api_error',
+        status: this.getStatus(),
+        error: this.sanitizeError(error),
+      };
+    }
+  }
+
   getStatus() {
     return {
       configured: Boolean(this.client),
@@ -100,6 +128,16 @@ Return only valid JSON:
       if (apiKey) return { apiKey, keyName };
     }
     return { apiKey: null, keyName: null };
+  }
+
+  private sanitizeError(error: unknown) {
+    const details = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    const statusMatch = details.match(/\b(400|401|403|404|429|500|503)\b/);
+
+    return {
+      statusCode: statusMatch?.[1] ?? null,
+      message: details.replace(/AIza[0-9A-Za-z_-]+/g, '[redacted-api-key]').slice(0, 1000),
+    };
   }
 
   private fallbackChatResponse(message: string, reason: 'not_configured' | 'api_error') {
