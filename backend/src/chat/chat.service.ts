@@ -105,6 +105,13 @@ export class ChatService {
     };
   }
 
+  status() {
+    return {
+      gemini: this.geminiService.getStatus(),
+      aiWriteEnabled: this.configService.get<string>('AI_WRITE_ENABLED', 'false') === 'true',
+    };
+  }
+
   async executeFunctionCall(user: User, name: string, args: Record<string, unknown> = {}) {
     if (writeFunctionMap[name]) {
       return this.proposeWriteAction(user, writeFunctionMap[name], args);

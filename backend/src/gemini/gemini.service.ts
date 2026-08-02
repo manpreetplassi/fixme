@@ -5,13 +5,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 @Injectable()
 export class GeminiService {
   private static readonly defaultModel = 'gemini-2.5-flash';
+  private static readonly apiKeyNames = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY'];
   private readonly logger = new Logger(GeminiService.name);
   private readonly client: GoogleGenerativeAI | null;
   private readonly modelName: string;
+  private readonly configuredKeyName: string | null;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const { apiKey, keyName } = this.resolveApiKey();
     this.client = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+    this.configuredKeyName = keyName;
     this.modelName = this.configService.get<string>('GEMINI_MODEL')?.trim() || GeminiService.defaultModel;
   }
 
@@ -56,7 +59,7 @@ Return only valid JSON:
 
   async *streamChat(messages: Array<{ role: 'user' | 'assistant'; content: string }>): AsyncGenerator<string> {
     if (!this.client) {
-      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '');
+      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '', 'not_configured');
       return;
     }
 
@@ -79,13 +82,32 @@ Return only valid JSON:
       }
     } catch (error) {
       this.logger.warn(`Gemini chat failed: ${String(error)}`);
-      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '');
+      yield this.fallbackChatResponse(messages.at(-1)?.content ?? '', 'api_error');
     }
   }
 
-  private fallbackChatResponse(message: string) {
+  getStatus() {
+    return {
+      configured: Boolean(this.client),
+      keyName: this.configuredKeyName,
+      model: this.modelName,
+    };
+  }
+
+  private resolveApiKey() {
+    for (const keyName of GeminiService.apiKeyNames) {
+      const apiKey = this.configService.get<string>(keyName)?.trim();
+      if (apiKey) return { apiKey, keyName };
+    }
+    return { apiKey: null, keyName: null };
+  }
+
+  private fallbackChatResponse(message: string, reason: 'not_configured' | 'api_error') {
     const trimmed = message.trim();
     if (!trimmed) return 'I am here. Send me what you want to think through or plan next.';
+    if (reason === 'api_error') {
+      return `I hear you: "${trimmed}". Gemini is configured, but the Gemini API call failed, so I saved the conversation and can still help with a simple next step: name the outcome, the deadline, and the first action you can take today.`;
+    }
     return `I hear you: "${trimmed}". Gemini is not configured right now, so I saved the conversation and can still help with a simple next step: name the outcome, the deadline, and the first action you can take today.`;
   }
 }

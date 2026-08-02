@@ -47,6 +47,12 @@ export class ChatController {
     return this.chatService.functionDefinitions();
   }
 
+  @Get('status')
+  @ApiOperation({ summary: 'Get safe chat/Gemini configuration status' })
+  status() {
+    return this.chatService.status();
+  }
+
   @Post('functions/call')
   @ApiOperation({ summary: 'Execute a read function or create a pending write action' })
   functionCall(@CurrentUser() user: User, @Body() dto: ChatFunctionCallDto) {
